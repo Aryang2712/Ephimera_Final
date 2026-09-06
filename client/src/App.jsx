@@ -13,7 +13,6 @@ function App() {
         </div>
       </nav>
       
-      {/* Passing a static room ID for the hackathon demo */}
       <StreamDashboard videoId="demo-video-123" />
     </div>
   );
