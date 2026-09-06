@@ -147,32 +147,60 @@ export function useWebRTC(roomId) {
 
   // Notice the 'async' keyword here!
 window.broadcastToPeers = useCallback(async (segmentUrl, arrayBuffer) => {
-  if (dataChannel.current && dataChannel.current.readyState === 'open') {
-    try {
-      dataChannel.current.send(JSON.stringify({ header: true, url: segmentUrl }));
-      
-      // THE FIX: 16KB is the maximum universally safe chunk size for WebRTC!
-      const MAX_CHUNK = 16 * 1024; 
-      let offset = 0;
-      
-      while (offset < arrayBuffer.byteLength) {
-        // THE FIX: If the queue has even 4 slices in it (64KB), force a pause!
-        if (dataChannel.current.bufferedAmount > 64 * 1024) {
-          // Yield the JavaScript event loop for 10ms so the Wi-Fi card can transmit
-          await new Promise(resolve => setTimeout(resolve, 10)); 
-        }
+  const channel = dataChannel.current;
+  if (!channel || channel.readyState !== 'open') return;
 
-        const end = Math.min(offset + MAX_CHUNK, arrayBuffer.byteLength);
-        dataChannel.current.send(arrayBuffer.slice(offset, end));
-        offset += MAX_CHUNK;
+  const MAX_CHUNK = 16 * 1024;
+  const HIGH_WATER = 256 * 1024; // pause sending once buffered exceeds this
+  const LOW_WATER = 64 * 1024;   // resume once buffered drops below this
+  channel.bufferedAmountLowThreshold = LOW_WATER;
+
+  // Wait until the channel has actually drained, instead of guessing with setTimeout
+  const waitForDrain = () =>
+    new Promise((resolve) => {
+      if (channel.bufferedAmount <= LOW_WATER) return resolve();
+      const onLow = () => {
+        channel.removeEventListener('bufferedamountlow', onLow);
+        resolve();
+      };
+      channel.addEventListener('bufferedamountlow', onLow);
+    });
+
+  // Retry a single send if the queue is momentarily full, instead of
+  // letting the whole segment die and leave the receiver with a partial buffer
+  const sendWithRetry = async (data, retries = 5) => {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        channel.send(data);
+        return;
+      } catch (err) {
+        if (err.name === 'OperationError' && attempt < retries) {
+          await waitForDrain();
+          await new Promise((r) => setTimeout(r, 20 * (attempt + 1)));
+        } else {
+          throw err;
+        }
       }
-      
-      dataChannel.current.send(JSON.stringify({ eof: true, url: segmentUrl }));
-      setChunksSeeded(prev => prev + 1);
-      
-    } catch (err) {
-      console.error("P2P Broadcast failed", err);
     }
+  };
+
+  try {
+    await sendWithRetry(JSON.stringify({ header: true, url: segmentUrl }));
+
+    let offset = 0;
+    while (offset < arrayBuffer.byteLength) {
+      if (channel.bufferedAmount > HIGH_WATER) {
+        await waitForDrain();
+      }
+      const end = Math.min(offset + MAX_CHUNK, arrayBuffer.byteLength);
+      await sendWithRetry(arrayBuffer.slice(offset, end));
+      offset = end;
+    }
+
+    await sendWithRetry(JSON.stringify({ eof: true, url: segmentUrl }));
+    setChunksSeeded((prev) => prev + 1);
+  } catch (err) {
+    console.error("P2P Broadcast failed permanently for", segmentUrl, err);
   }
 }, []);
   // MAKE SURE YOUR DASHBOARD IS GRABBING `chunksSeeded` FROM THIS RETURN!
