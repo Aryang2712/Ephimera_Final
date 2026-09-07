@@ -496,7 +496,9 @@ export default function LandingPage({ onLaunchDashboard }) {
     let order = Array.from({ length: cardEls.length }, (_, i) => i);
     let tl = null;
     let intervalId = null;
+    let initialTriggerTimeout = null;
     let isSwapping = false;
+    let isVisible = false;
 
     const total = cardEls.length;
     cardEls.forEach((el, i) => {
@@ -504,7 +506,7 @@ export default function LandingPage({ onLaunchDashboard }) {
     });
 
     const swap = () => {
-      if (order.length < 2) return;
+      if (order.length < 2 || isSwapping) return;
       isSwapping = true;
 
       const [front, ...rest] = order;
@@ -555,15 +557,54 @@ export default function LandingPage({ onLaunchDashboard }) {
       tl.call(() => { order = [...rest, front]; });
     };
 
+    const stopTimer = () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+      if (initialTriggerTimeout) {
+        clearTimeout(initialTriggerTimeout);
+        initialTriggerTimeout = null;
+      }
+    };
+
     const startTimer = () => {
-      clearInterval(intervalId);
+      stopTimer();
       intervalId = setInterval(swap, config.delay);
     };
 
-    startTimer();
+    // Auto-run card swap dynamically as soon as user reaches this part of the website
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting) {
+          isVisible = true;
+          // Trigger first swap after smooth arrival (600ms) then continue running automatically
+          initialTriggerTimeout = setTimeout(() => {
+            if (isVisible) {
+              swap();
+              startTimer();
+            }
+          }, 600);
+        } else {
+          isVisible = false;
+          stopTimer();
+        }
+      },
+      { threshold: 0.15 }
+    );
 
-    const handleMouseEnter = () => { tl?.pause(); clearInterval(intervalId); };
-    const handleMouseLeave = () => { tl?.play(); startTimer(); };
+    observer.observe(container);
+
+    const handleMouseEnter = () => {
+      stopTimer();
+    };
+
+    const handleMouseLeave = () => {
+      if (isVisible) {
+        startTimer();
+      }
+    };
 
     container.addEventListener('mouseenter', handleMouseEnter);
     container.addEventListener('mouseleave', handleMouseLeave);
@@ -572,7 +613,7 @@ export default function LandingPage({ onLaunchDashboard }) {
       const handler = () => {
         if (!isSwapping) {
           swap();
-          startTimer();
+          if (isVisible) startTimer();
         }
       };
       card.addEventListener('click', handler);
@@ -580,10 +621,12 @@ export default function LandingPage({ onLaunchDashboard }) {
     });
 
     return () => {
-      clearInterval(intervalId);
+      stopTimer();
+      observer.disconnect();
       container.removeEventListener('mouseenter', handleMouseEnter);
       container.removeEventListener('mouseleave', handleMouseLeave);
       clickHandlers.forEach(({ card, handler }) => card.removeEventListener('click', handler));
+      tl?.kill();
     };
   }, []);
 
