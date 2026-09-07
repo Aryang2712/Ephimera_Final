@@ -39,7 +39,30 @@ const ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
   { urls: 'stun:stun2.l.google.com:19302' },
-  { urls: 'stun:stun.cloudflare.com:3478' }
+  { urls: 'stun:stun.cloudflare.com:3478' },
+  // TURN relay — required once peers are on different networks (deployed,
+  // not same LAN). STUN alone fails whenever a peer is behind a symmetric
+  // NAT or restrictive firewall; TURN relays the media/data through a
+  // public server instead of requiring a direct path between the peers.
+  // These are free Open Relay Project test credentials — fine for
+  // verifying the fix, but swap in your own TURN provider (Twilio,
+  // Xirsys, Cloudflare Realtime, or a self-hosted coturn) for production,
+  // since Open Relay's free tier has limited bandwidth.
+  {
+    urls: 'turn:openrelay.metered.ca:80',
+    username: 'openrelayproject',
+    credential: 'openrelayproject'
+  },
+  {
+    urls: 'turn:openrelay.metered.ca:443',
+    username: 'openrelayproject',
+    credential: 'openrelayproject'
+  },
+  {
+    urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+    username: 'openrelayproject',
+    credential: 'openrelayproject'
+  }
 ];
 
 export function useWebRTC(roomId = 'ephimera-global-room') {
@@ -801,15 +824,7 @@ export function useWebRTC(roomId = 'ephimera-global-room') {
           const peerId = data.clientId;
           if (!peerId) return;
 
-          if (data.type === 'room-peers') {
-            console.log('👥 Received active room peers from server:', data.peers);
-            (data.peers || []).forEach((id) => {
-              if (id && id !== myClientId) {
-                discoverPeer(id);
-              }
-            });
-            return;
-          }
+          console.log(`📥 Signaling [${data.type}] from ${peerId.substring(0, 8)}`);
 
           if (data.type === 'join') {
             await discoverPeer(peerId);
