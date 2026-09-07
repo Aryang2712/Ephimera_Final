@@ -7,8 +7,9 @@
   --about-text-primary: #121212;
   --about-text-secondary: #5A5751;
   --about-text-muted: #848077;
-  --about-accent: #EFA300;
-  --about-accent-hover: #D99200;
+  --about-accent: #9333EA;
+  --about-accent-hover: #7E22CE;
+  --about-accent-light: #A855F7;
   --about-border: #E8E3DA;
   --about-border-subtle: rgba(18, 18, 18, 0.08);
 
@@ -23,7 +24,7 @@
 }
 
 .about-page-root ::selection {
-  background: rgba(239, 163, 0, 0.25);
+  background: rgba(168, 85, 247, 0.25);
   color: #121212;
 }
 
@@ -144,8 +145,8 @@
 }
 
 .about-btn-cta {
-  background-color: var(--about-accent);
-  color: #121212;
+  background: linear-gradient(135deg, #A855F7 0%, #7E22CE 100%);
+  color: #ffffff;
   border: none;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 0.8rem;
@@ -153,19 +154,19 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 0.65rem 1.35rem;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  box-shadow: 0 2px 6px rgba(239, 163, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(147, 51, 234, 0.28);
 }
 
 .about-btn-cta:hover {
-  background-color: var(--about-accent-hover);
+  background: linear-gradient(135deg, #B56BFF 0%, #6D28D9 100%);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(239, 163, 0, 0.3);
+  box-shadow: 0 4px 14px rgba(147, 51, 234, 0.42);
 }
 
 /* Hero Section */
@@ -201,8 +202,8 @@
 }
 
 .about-join-btn {
-  background-color: var(--about-accent);
-  color: #121212;
+  background: linear-gradient(135deg, #A855F7 0%, #7E22CE 100%);
+  color: #ffffff;
   border: none;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 0.85rem;
@@ -210,19 +211,19 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 0.85rem 1.65rem;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(239, 163, 0, 0.25);
+  box-shadow: 0 3px 10px rgba(147, 51, 234, 0.3);
 }
 
 .about-join-btn:hover {
-  background-color: var(--about-accent-hover);
+  background: linear-gradient(135deg, #B56BFF 0%, #6D28D9 100%);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(239, 163, 0, 0.35);
+  box-shadow: 0 6px 18px rgba(147, 51, 234, 0.45);
 }
 
 /* Meet the Team Section */

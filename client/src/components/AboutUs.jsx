@@ -38,26 +38,26 @@ export default function AboutUs({ onBackToLanding, onLaunchDashboard }) {
 
   return (
     <div className="about-page-root">
-      {/* Ambient Golden Bezier Spline Curves */}
+      {/* Ambient Purple Bezier Spline Curves */}
       <div className="about-splines" aria-hidden="true">
         <svg viewBox="0 0 1440 900" fill="none" preserveAspectRatio="none">
           <path
             d="M -100 220 C 250 80, 500 580, 850 200 C 1100 -50, 1300 450, 1550 180"
-            stroke="#EFA300"
-            strokeWidth="1.2"
-            strokeOpacity="0.45"
+            stroke="#A855F7"
+            strokeWidth="1.3"
+            strokeOpacity="0.55"
           />
           <path
             d="M -50 340 C 320 200, 480 720, 950 280 C 1200 40, 1380 620, 1600 320"
-            stroke="#EFA300"
-            strokeWidth="0.8"
-            strokeOpacity="0.25"
+            stroke="#C084FC"
+            strokeWidth="0.9"
+            strokeOpacity="0.38"
           />
           <path
             d="M 100 80 C 400 -80, 750 420, 1050 150 C 1280 -20, 1420 300, 1650 120"
-            stroke="#EFA300"
-            strokeWidth="0.9"
-            strokeOpacity="0.35"
+            stroke="#896ABD"
+            strokeWidth="1.1"
+            strokeOpacity="0.45"
           />
         </svg>
       </div>
