@@ -23,6 +23,10 @@ const getSignalingServerUrl = () => {
   const host = window.location.hostname;
 
   if (host && host !== 'localhost' && host !== '127.0.0.1') {
+    // When hosted on Vercel, GitHub Pages, or Netlify, default to your live Render backend
+    if (host.includes('vercel.app') || host.includes('github.io') || host.includes('netlify.app')) {
+      return 'wss://ephimera-server.onrender.com';
+    }
     if (host.includes('loca.lt') || host.includes('ngrok') || host.includes('onrender.com') || host.includes('railway.app')) {
       return `${wsProtocol}//${host}`;
     }
