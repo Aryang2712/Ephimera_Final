@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import SpecularButton from './SpecularButton';
 import './LandingPage.css';
 
-export default function LandingPage({ onLaunchDashboard }) {
+export default function LandingPage({ onLaunchDashboard, onOpenAboutUs }) {
   const aeroCanvasRef = useRef(null);
   const particleCanvasRef = useRef(null);
   const particleContainerRef = useRef(null);
@@ -497,7 +497,9 @@ export default function LandingPage({ onLaunchDashboard }) {
     let order = Array.from({ length: cardEls.length }, (_, i) => i);
     let tl = null;
     let intervalId = null;
+    let initialTriggerTimeout = null;
     let isSwapping = false;
+    let isVisible = false;
 
     const total = cardEls.length;
     cardEls.forEach((el, i) => {
@@ -505,7 +507,7 @@ export default function LandingPage({ onLaunchDashboard }) {
     });
 
     const swap = () => {
-      if (order.length < 2) return;
+      if (order.length < 2 || isSwapping) return;
       isSwapping = true;
 
       const [front, ...rest] = order;
@@ -556,15 +558,54 @@ export default function LandingPage({ onLaunchDashboard }) {
       tl.call(() => { order = [...rest, front]; });
     };
 
+    const stopTimer = () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+      if (initialTriggerTimeout) {
+        clearTimeout(initialTriggerTimeout);
+        initialTriggerTimeout = null;
+      }
+    };
+
     const startTimer = () => {
-      clearInterval(intervalId);
+      stopTimer();
       intervalId = setInterval(swap, config.delay);
     };
 
-    startTimer();
+    // Auto-run card swap dynamically as soon as user reaches this part of the website
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting) {
+          isVisible = true;
+          // Trigger first swap after smooth arrival (600ms) then continue running automatically
+          initialTriggerTimeout = setTimeout(() => {
+            if (isVisible) {
+              swap();
+              startTimer();
+            }
+          }, 600);
+        } else {
+          isVisible = false;
+          stopTimer();
+        }
+      },
+      { threshold: 0.15 }
+    );
 
-    const handleMouseEnter = () => { tl?.pause(); clearInterval(intervalId); };
-    const handleMouseLeave = () => { tl?.play(); startTimer(); };
+    observer.observe(container);
+
+    const handleMouseEnter = () => {
+      stopTimer();
+    };
+
+    const handleMouseLeave = () => {
+      if (isVisible) {
+        startTimer();
+      }
+    };
 
     container.addEventListener('mouseenter', handleMouseEnter);
     container.addEventListener('mouseleave', handleMouseLeave);
@@ -573,7 +614,7 @@ export default function LandingPage({ onLaunchDashboard }) {
       const handler = () => {
         if (!isSwapping) {
           swap();
-          startTimer();
+          if (isVisible) startTimer();
         }
       };
       card.addEventListener('click', handler);
@@ -581,10 +622,12 @@ export default function LandingPage({ onLaunchDashboard }) {
     });
 
     return () => {
-      clearInterval(intervalId);
+      stopTimer();
+      observer.disconnect();
       container.removeEventListener('mouseenter', handleMouseEnter);
       container.removeEventListener('mouseleave', handleMouseLeave);
       clickHandlers.forEach(({ card, handler }) => card.removeEventListener('click', handler));
+      tl?.kill();
     };
   }, []);
 
@@ -628,20 +671,24 @@ export default function LandingPage({ onLaunchDashboard }) {
             <SpecularButton
               size="sm"
               radius={12}
-              tint="#ffffff"
-              tintOpacity={0.06}
+              tint="#B39CD0"
+              tintOpacity={1}
               blur={10}
-              textColor="#e4e4e7"
-              lineColor="#c084fc"
-              baseColor="#581c87"
-              intensity={1.2}
+              textColor="#000000"
+              lineColor="#ffffff"
+              baseColor="#896ABD"
+              intensity={1.3}
               thickness={1.2}
               onClick={() => {
-                const section = document.getElementById('cardSwapSection');
-                if (section) section.scrollIntoView({ behavior: 'smooth' });
+                if (onOpenAboutUs) {
+                  onOpenAboutUs();
+                } else {
+                  const section = document.getElementById('cardSwapSection');
+                  if (section) section.scrollIntoView({ behavior: 'smooth' });
+                }
               }}
             >
-              About Us
+              <span className="font-bold text-black">About Us</span>
             </SpecularButton>
 
             <SpecularButton

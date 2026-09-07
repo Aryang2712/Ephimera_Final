@@ -1,24 +1,34 @@
 import React, { useState } from 'react';
 import LandingPage from './LandingPage';
+import AboutUs from './components/AboutUs';
 import StreamDashboard from './components/StreamDashboard';
 import ThinkingDots from './ThinkingDots';
 import { ArrowLeft } from 'lucide-react';
 
 export default function App() {
-  const [showDashboard, setShowDashboard] = useState(false);
+  const [currentView, setCurrentView] = useState('landing'); // 'landing' | 'about' | 'dashboard'
 
-  // 1. If not launched yet, show the 3D Landing Page
-  if (!showDashboard) {
+  // 1. If viewing the About Us page
+  if (currentView === 'about') {
     return (
-      <LandingPage
-        onLaunchDashboard={() => {
-          setShowDashboard(true);
-        }}
+      <AboutUs
+        onBackToLanding={() => setCurrentView('landing')}
+        onLaunchDashboard={() => setCurrentView('dashboard')}
       />
     );
   }
 
-  // 2. When 'Launch Live P2P Player' is clicked, show StreamDashboard on neutral dark chassis #090d16
+  // 2. If viewing the 3D Landing Page
+  if (currentView === 'landing') {
+    return (
+      <LandingPage
+        onLaunchDashboard={() => setCurrentView('dashboard')}
+        onOpenAboutUs={() => setCurrentView('about')}
+      />
+    );
+  }
+
+  // 3. When 'Launch Live P2P Player' is clicked, show StreamDashboard on neutral dark chassis #090d16
   return (
     <div className="min-h-screen bg-[#090d16] text-[#f3f4f6] relative overflow-x-hidden selection:bg-sky-500/30 selection:text-white">
       {/* React Bits "Thinking Dots" Breathing Matrix Background in Meteorite #362A83 on #090d16 */}
@@ -39,7 +49,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3.5">
             {/* Ephimera Brand Logo */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setCurrentView('landing')}>
               <svg className="h-6 w-auto" viewBox="0 0 1260 280" fill="currentColor">
                 <g fill="#ffffff">
                   <path fillRule="evenodd" d="M 48,142 C 48,92 80,64 123,64 C 166,64 197,92 197,142 L 197,152 L 70,152 C 72,185 94,204 124,204 C 146,204 165,194 175,178 L 195,188 C 180,210 155,224 123,224 C 78,224 48,194 48,142 Z M 71,133 L 175,133 C 173,103 152,83 123,83 C 94,83 73,103 71,133 Z" />
@@ -61,13 +71,21 @@ export default function App() {
             </div>
           </div>
           
-          <button
-            onClick={() => setShowDashboard(false)}
-            className="flex items-center space-x-2 text-xs font-semibold bg-white/[0.05] hover:bg-white/[0.1] text-slate-200 hover:text-white px-3.5 py-1.8 rounded-lg transition duration-200 border border-white/[0.08] hover:border-white/[0.15] shadow-sm backdrop-blur-md cursor-pointer group"
-          >
-            <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform duration-200 text-slate-400 group-hover:text-white" />
-            <span>HOME</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setCurrentView('about')}
+              className="text-xs font-semibold text-slate-300 hover:text-white px-3 py-2 rounded-xl transition duration-200 border border-transparent hover:border-white/[0.08] hover:bg-white/[0.04] cursor-pointer"
+            >
+              ABOUT US
+            </button>
+            <button
+              onClick={() => setCurrentView('landing')}
+              className="flex items-center space-x-2 text-xs sm:text-sm font-bold bg-white/[0.06] hover:bg-white/[0.12] text-slate-200 hover:text-white px-4 py-2.5 rounded-xl transition-all duration-200 border border-white/[0.08] hover:border-white/[0.16] shadow-sm backdrop-blur-md cursor-pointer group active:scale-95"
+            >
+              <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition-transform duration-200 text-slate-400 group-hover:text-white" />
+              <span>HOME</span>
+            </button>
+          </div>
         </div>
       </header>
 
