@@ -29,7 +29,7 @@ export default function App() {
         baseOpacity={0.25}
         maxOpacity={0.95}
         dotColor="#362A83"
-        speed={0.75}
+        speed={2.2}
         cloudCount={3}
         interactive={true}
       />

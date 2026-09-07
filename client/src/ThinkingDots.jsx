@@ -35,7 +35,7 @@ export default function ThinkingDots({
   baseOpacity = 0.25,
   maxOpacity = 0.95,
   dotColor = '#362A83',
-  speed = 0.8,
+  speed = 2.4,
   cloudCount = 3,
   interactive = true,
   className = '',
@@ -101,11 +101,11 @@ export default function ThinkingDots({
     window.addEventListener('resize', resize);
     resize();
 
-    // Drifting clouds of density
+    // Drifting clouds of density with increased drift speeds
     const clouds = [
-      { seedX: 0.15, seedY: 0.35, speedX: 0.32, speedY: 0.24, radius: 280, weight: 1.0 },
-      { seedX: 0.65, seedY: 0.75, speedX: -0.28, speedY: 0.38, radius: 320, weight: 0.85 },
-      { seedX: 0.85, seedY: 0.25, speedX: 0.22, speedY: -0.31, radius: 240, weight: 0.75 }
+      { seedX: 0.15, seedY: 0.35, speedX: 0.68, speedY: 0.54, radius: 280, weight: 1.0 },
+      { seedX: 0.65, seedY: 0.75, speedX: -0.62, speedY: 0.72, radius: 320, weight: 0.85 },
+      { seedX: 0.85, seedY: 0.25, speedX: 0.55, speedY: -0.64, radius: 240, weight: 0.75 }
     ].slice(0, Math.max(1, cloudCount));
 
     let startTime = performance.now();
@@ -115,14 +115,14 @@ export default function ThinkingDots({
       ctx.clearRect(0, 0, width, height);
 
       // Smooth mouse lerp
-      mouse.x += (mouse.targetX - mouse.x) * 0.12;
-      mouse.y += (mouse.targetY - mouse.y) * 0.12;
+      mouse.x += (mouse.targetX - mouse.x) * 0.18;
+      mouse.y += (mouse.targetY - mouse.y) * 0.18;
 
       // Update cloud positions
       const activeClouds = clouds.map((c, i) => {
-        const cx = (width * 0.5) + Math.sin(time * c.speedX + c.seedX * 10) * (width * 0.38) + Math.cos(time * 0.15 + i) * (width * 0.1);
-        const cy = (height * 0.5) + Math.cos(time * c.speedY + c.seedY * 10) * (height * 0.34) + Math.sin(time * 0.18 + i) * (height * 0.1);
-        const radius = c.radius * (0.85 + Math.sin(time * 0.5 + i * 2) * 0.15);
+        const cx = (width * 0.5) + Math.sin(time * c.speedX + c.seedX * 10) * (width * 0.38) + Math.cos(time * 0.35 + i) * (width * 0.1);
+        const cy = (height * 0.5) + Math.cos(time * c.speedY + c.seedY * 10) * (height * 0.34) + Math.sin(time * 0.38 + i) * (height * 0.1);
+        const radius = c.radius * (0.85 + Math.sin(time * 0.9 + i * 2) * 0.15);
         return { x: cx, y: cy, radius, weight: c.weight };
       });
 
@@ -164,8 +164,8 @@ export default function ThinkingDots({
 
           density = Math.min(density, 1.4);
 
-          // Subtle organic breathing oscillation
-          const wave = Math.sin(time * 1.2 + x * 0.015 + y * 0.015) * 0.1;
+          // Dynamic breathing wave oscillation
+          const wave = Math.sin(time * 2.2 + x * 0.02 + y * 0.02) * 0.14;
           const currentDensity = Math.max(0, density + wave);
 
           // Calculate radius & opacity
