@@ -3,7 +3,7 @@ import gsap from 'gsap';
 import SpecularButton from './SpecularButton';
 import './LandingPage.css';
 
-export default function LandingPage({ onLaunchDashboard }) {
+export default function LandingPage({ onLaunchDashboard, onOpenAboutUs }) {
   const aeroCanvasRef = useRef(null);
   const particleCanvasRef = useRef(null);
   const particleContainerRef = useRef(null);
@@ -680,8 +680,12 @@ export default function LandingPage({ onLaunchDashboard }) {
               intensity={1.3}
               thickness={1.2}
               onClick={() => {
-                const section = document.getElementById('cardSwapSection');
-                if (section) section.scrollIntoView({ behavior: 'smooth' });
+                if (onOpenAboutUs) {
+                  onOpenAboutUs();
+                } else {
+                  const section = document.getElementById('cardSwapSection');
+                  if (section) section.scrollIntoView({ behavior: 'smooth' });
+                }
               }}
             >
               <span className="font-bold text-black">About Us</span>
