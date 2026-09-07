@@ -42,7 +42,7 @@ const ICE_SERVERS = [
   { urls: 'stun:stun.cloudflare.com:3478' }
 ];
 
-export function useWebRTC(roomId) {
+export function useWebRTC(roomId = 'ephimera-global-room') {
   const [isConnected, setIsConnected] = useState(false);
   const [connectedPeersCount, setConnectedPeersCount] = useState(0);
   const [receivedChunks, setReceivedChunks] = useState(0);
@@ -815,8 +815,18 @@ export function useWebRTC(roomId) {
 
     connect();
 
+    // Heartbeat discovery: broadcast join every 3.5s while waiting for peers
+    const discoveryInterval = setInterval(() => {
+      if (ws.current?.readyState === WebSocket.OPEN && Object.keys(peersRef.current).length === 0) {
+        try {
+          ws.current.send(JSON.stringify({ type: 'join', room: roomId, clientId: myClientId }));
+        } catch (e) {}
+      }
+    }, 3500);
+
     return () => {
       isDisposed = true;
+      clearInterval(discoveryInterval);
       if (reconnectTimer) clearTimeout(reconnectTimer);
       if (socket) {
         try { socket.close(); } catch (e) {}
