@@ -79,14 +79,14 @@ export default function DropZone({ onVideoLoaded, disabled = false }) {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`relative overflow-hidden rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer p-8 text-center backdrop-blur-2xl group ${
+            className={`relative overflow-hidden rounded-2xl border-2 border-dashed transition-colors duration-200 cursor-pointer p-8 text-center group ${
                 isDragging
-                    ? 'border-purple-400 bg-purple-950/40 scale-[1.01] shadow-[0_0_35px_rgba(168,85,247,0.4)]'
-                    : 'border-purple-500/35 bg-[#16121f]/80 hover:border-purple-400/60 hover:bg-[#1a1426]/90 shadow-2xl shadow-black/70 hover:shadow-[0_0_25px_rgba(168,85,247,0.18)]'
+                    ? 'border-sky-400 bg-sky-950/20'
+                    : 'border-white/[0.08] bg-[#0d1322] hover:border-white/[0.18] hover:bg-[#11182c]'
             } ${disabled || loading ? 'pointer-events-none opacity-80' : ''}`}
         >
-            {/* Top edge glossy highlight */}
-            <div className="absolute inset-x-8 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-purple-300/40 to-transparent" />
+            {/* Crisp 1px gradient hairline border */}
+            <div className="absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.15] to-transparent" />
 
             <input
                 ref={fileInputRef}
@@ -99,38 +99,38 @@ export default function DropZone({ onVideoLoaded, disabled = false }) {
             <div className="flex flex-col items-center justify-center space-y-3.5">
                 {loading ? (
                     <>
-                        <div className="w-14 h-14 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 animate-spin shadow-[0_0_20px_rgba(168,85,247,0.3)]">
-                            <Loader2 size={28} />
+                        <div className="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 animate-spin">
+                            <Loader2 size={24} />
                         </div>
                         <div>
                             <p className="font-bold text-white text-base tracking-tight">{statusText || 'Initializing Live Stream...'}</p>
-                            <p className="text-xs text-purple-300/80 mt-1 font-mono">Starting real-time P2P video streaming across connected peers</p>
+                            <p className="text-xs text-slate-400 mt-1 font-mono">Starting real-time P2P video streaming across connected peers</p>
                         </div>
                     </>
                 ) : (
                     <>
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 relative overflow-hidden ${
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-200 ${
                             isDragging 
-                                ? 'bg-gradient-to-tr from-purple-600 to-indigo-500 text-white shadow-[0_0_25px_rgba(168,85,247,0.5)] scale-110' 
-                                : 'bg-purple-600/20 border border-purple-500/35 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.25)] group-hover:border-purple-400/60 group-hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]'
+                                ? 'bg-sky-500 text-white' 
+                                : 'bg-white/[0.04] border border-white/[0.08] text-slate-300 group-hover:border-white/[0.15] group-hover:text-white'
                         }`}>
-                            <UploadCloud size={28} className="transition-transform duration-200 group-hover:-translate-y-0.5" />
+                            <UploadCloud size={24} />
                         </div>
                         <div>
                             <p className="font-bold text-white text-base sm:text-lg tracking-tight">
-                                Drag & drop a video to stream live, or <span className="text-purple-400 underline underline-offset-4 hover:text-purple-300">browse</span>
+                                Drag & drop a video to stream live, or <span className="text-sky-400 underline underline-offset-4 hover:text-sky-300">browse</span>
                             </p>
-                            <p className="text-xs text-gray-300 mt-1">
+                            <p className="text-xs text-slate-400 mt-1">
                                 Supports MP4, WebM & QuickTime • Live frame-by-frame P2P rendering on peer devices
                             </p>
                         </div>
                         <div className="flex flex-wrap items-center justify-center gap-2 pt-1.5">
-                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-200 bg-white/[0.07] border border-white/15 px-3 py-1 rounded-full backdrop-blur-md shadow-sm">
-                                <Sparkles size={12} className="text-purple-400" />
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 bg-white/[0.04] border border-white/[0.08] px-3 py-1 rounded-full">
+                                <Sparkles size={12} className="text-sky-400" />
                                 Real-time Live Rendering
                             </span>
-                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-200 bg-white/[0.07] border border-white/15 px-3 py-1 rounded-full backdrop-blur-md shadow-sm">
-                                <Play size={12} className="text-purple-400" />
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 bg-white/[0.04] border border-white/[0.08] px-3 py-1 rounded-full">
+                                <Play size={12} className="text-emerald-400" />
                                 Instant Local Playback
                             </span>
                         </div>

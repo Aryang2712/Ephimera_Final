@@ -7,7 +7,7 @@ import DropZone from './DropZone';
 const DEMO_HLS_URL = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8";
 
 // Live Typing Effect Hook with Clean Auto-Removal of Cursor
-function useTypewriter(text, speed = 60, startDelay = 120) {
+function useTypewriter(text, speed = 68, startDelay = 120) {
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
 
@@ -57,7 +57,7 @@ export default function StreamDashboard({ videoId }) {
   const [copied, setCopied] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
 
-  // Live Typewriter Effect (tuned 10% slower for deliberate cinematic cadence)
+  // Live Typewriter Effect
   const { displayedText: titleText, isTyping: isTitleTyping } = useTypewriter('EPHIMERA CDN Node', 68, 120);
   const { displayedText: subText, isTyping: isSubTyping } = useTypewriter(
     'Real-Time P2P Live Video Mesh & Decentralized Edge Streaming',
@@ -140,7 +140,7 @@ export default function StreamDashboard({ videoId }) {
   let activeTitle = '';
   let isHls = false;
   let isP2P = false;
-  let roleLabel = 'Idle';
+  let roleLabel = 'Standby';
 
   if (incomingMediaStream) {
     activeSource = incomingMediaStream;
@@ -187,117 +187,121 @@ export default function StreamDashboard({ videoId }) {
           <h1 className="text-4xl sm:text-[2.75rem] font-black text-white tracking-tight flex items-center leading-none">
             <span>{titleText}</span>
             {isTitleTyping && (
-              <span className="inline-block ml-2 w-1.5 h-9 sm:h-11 bg-purple-400 animate-pulse shadow-[0_0_14px_rgba(168,85,247,0.95)] rounded-sm" />
+              <span className="inline-block ml-2 w-1.5 h-9 sm:h-11 bg-sky-400 animate-pulse rounded-sm" />
             )}
           </h1>
-          <p className="text-xs sm:text-sm text-[#B39CD0] mt-2 font-mono flex items-center min-h-[1.4rem] tracking-wide">
+          <p className="text-xs sm:text-sm text-slate-400 mt-2 font-mono flex items-center min-h-[1.4rem] tracking-wide">
             <span>{subText}</span>
             {isSubTyping && (
-              <span className="inline-block ml-1 w-2 h-4 bg-purple-400 animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
+              <span className="inline-block ml-1 w-2 h-4 bg-sky-400 animate-pulse" />
             )}
           </p>
         </div>
 
-        {/* Live Swarm Status Pill - Purple Glass */}
-        <div className={`relative overflow-hidden px-4 py-2 rounded-full font-semibold text-xs sm:text-sm flex items-center gap-2.5 self-start sm:self-auto backdrop-blur-xl border transition-all duration-300 ${
+        {/* State Badge: Active (Emerald #10b981) vs Standby (Slate #64748b) */}
+        <div className={`relative overflow-hidden px-4 py-2 rounded-full font-semibold text-xs sm:text-sm flex items-center gap-2.5 self-start sm:self-auto backdrop-blur-md border transition-colors duration-200 ${
           isConnected 
-            ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.2)]' 
-            : 'bg-purple-500/15 text-purple-300 border-purple-500/35 shadow-[0_0_20px_rgba(168,85,247,0.2)]'
+            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+            : 'bg-slate-500/10 text-slate-400 border-white/[0.08]'
         }`}>
-          <div className="absolute inset-x-2 top-0 h-[1px] bg-gradient-to-r from-transparent via-purple-300/40 to-transparent" />
-          <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,1)]' : 'bg-purple-400 animate-ping'}`} />
+          <div className="absolute inset-x-2 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
+          <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
           <span>{isConnected ? 'P2P Mesh Active' : 'Locating Peers...'}</span>
         </div>
       </div>
 
-      {/* Connect 2nd Laptop on Same Wi-Fi Banner - Obsidian-Purple Glassmorphism */}
-      <div className="relative overflow-hidden rounded-2xl bg-[#16121f]/85 border border-purple-500/30 p-5 sm:p-6 shadow-2xl shadow-black/80 backdrop-blur-2xl group transition-all duration-300 hover:border-purple-400/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]">
-        {/* Top edge glossy highlight */}
-        <div className="absolute inset-x-6 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-purple-300/50 to-transparent" />
+      {/* Connect 2nd Laptop on Same Wi-Fi Banner - Neutral Dark Chassis #0d1322 + 1px border-white/[0.08] */}
+      <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] border border-white/[0.08] p-5 sm:p-6 shadow-sm group">
+        {/* Crisp 1px gradient hairline border */}
+        <div className="absolute inset-x-6 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.15] to-transparent" />
         
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative z-10">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600/30 to-indigo-600/20 border border-purple-500/40 flex items-center justify-center text-purple-300 shrink-0 shadow-[0_0_20px_rgba(168,85,247,0.3)]">
-              <Wifi size={22} className="text-purple-200" />
+            <div className="w-11 h-11 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-slate-300 shrink-0">
+              <Wifi size={20} className="text-slate-300" />
             </div>
             <div>
               <div className="flex items-center gap-2.5">
                 <span className="font-bold text-base text-white tracking-tight">Connect 2nd Laptop on Same Wi-Fi</span>
-                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/35 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
+                  connectedPeersCount > 0 
+                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                    : 'bg-slate-500/10 text-slate-400 border-white/[0.08]'
+                }`}>
                   {connectedPeersCount} {connectedPeersCount === 1 ? 'Peer' : 'Peers'} Connected
                 </span>
               </div>
-              <p className="text-xs text-[#d8b4fe]/85 mt-1">Open this link on your 2nd laptop to render the live stream:</p>
+              <p className="text-xs text-slate-400 mt-1">Open this link on your 2nd laptop to render the live stream:</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2.5 w-full md:w-auto">
-            <div className="bg-[#0b0811]/90 text-purple-100 font-mono text-xs px-4 py-2.5 rounded-xl border border-purple-500/25 truncate flex-1 md:w-72 shadow-inner">
+            <div className="bg-[#06080e] text-slate-300 font-mono text-xs px-4 py-2.5 rounded-xl border border-white/[0.08] truncate flex-1 md:w-72 shadow-inner">
               {shareUrl || 'http://localhost:5173'}
             </div>
             <button
               onClick={handleCopyLink}
-              className="relative overflow-hidden inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white border border-purple-400/40 transition-all duration-200 shrink-0 shadow-[0_0_20px_rgba(168,85,247,0.35)] hover:shadow-[0_0_30px_rgba(168,85,247,0.55)] cursor-pointer active:scale-95 group/btn"
+              className="relative overflow-hidden inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-white/[0.08] hover:bg-white/[0.14] text-white border border-white/[0.12] transition-colors duration-200 shrink-0 cursor-pointer active:scale-95"
             >
-              <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-              {copied ? <Check size={14} className="text-emerald-300" /> : <Copy size={14} />}
+              <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.2] to-transparent" />
+              {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} className="text-slate-300" />}
               <span>{copied ? 'Copied!' : 'Copy Link'}</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Network Stats Cards - Obsidian Purple Glass */}
+      {/* Network Stats Cards - Strict Semantic State Colors & Neutral Dark Chassis */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         
-        {/* Card 1: Origin Server Load (#B39CD0) */}
-        <div className="relative overflow-hidden rounded-2xl bg-[#16121f]/80 p-5 border border-purple-500/25 shadow-xl shadow-black/70 backdrop-blur-xl flex flex-col items-center group hover:border-purple-400/45 hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(179,156,208,0.2)] transition-all duration-300">
-          <div className="absolute inset-x-4 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#B39CD0]/50 to-transparent" />
-          <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-400/30 flex items-center justify-center text-[#B39CD0] mb-3 shadow-[0_0_12px_rgba(179,156,208,0.25)]">
-            <Server size={20} />
+        {/* Card 1: Origin Server Load - State: Standby (Slate #64748b) */}
+        <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] p-5 border border-white/[0.08] flex flex-col items-center group hover:border-white/[0.15] transition-colors duration-200">
+          <div className="absolute inset-x-4 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.15] to-transparent" />
+          <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-slate-400 mb-3">
+            <Server size={18} />
           </div>
-          <p className="text-[#a1a1aa] text-xs font-medium text-center">Origin Server Load</p>
+          <p className="text-slate-400 text-xs font-medium text-center">Origin Server Load</p>
           <p className="text-2xl font-black text-white mt-1 tracking-tight">{isConnected ? '-50%' : 'Normal'}</p>
-          <p className="text-[11px] text-[#B39CD0]/80 mt-1 font-mono">CDN Standby</p>
+          <p className="text-[11px] text-slate-500 mt-1 font-mono">Standby</p>
         </div>
         
-        {/* Card 2: Live P2P Bitrate (#A855F7) */}
-        <div className="relative overflow-hidden rounded-2xl bg-[#16121f]/80 p-5 border border-purple-500/25 shadow-xl shadow-black/70 backdrop-blur-xl flex flex-col items-center group hover:border-purple-400/45 hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(168,85,247,0.25)] transition-all duration-300">
-          <div className="absolute inset-x-4 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#A855F7]/50 to-transparent" />
-          <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-400/30 flex items-center justify-center text-[#A855F7] mb-3 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-            <Radio size={20} />
+        {/* Card 2: Live P2P Bitrate - State: Transferring/P2P (Electric Cyan #38bdf8) */}
+        <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] p-5 border border-white/[0.08] flex flex-col items-center group hover:border-white/[0.15] transition-colors duration-200">
+          <div className="absolute inset-x-4 top-0 h-[1px] bg-gradient-to-r from-transparent via-sky-400/25 to-transparent" />
+          <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-3">
+            <Radio size={18} />
           </div>
-          <p className="text-[#a1a1aa] text-xs font-medium text-center">Live P2P Bitrate</p>
+          <p className="text-slate-400 text-xs font-medium text-center">Live P2P Bitrate</p>
           <p className="text-2xl font-black text-white mt-1 tracking-tight">
-            {bitrateMbps} <span className="text-xs font-semibold text-[#A855F7]">Mbps</span>
+            {bitrateMbps} <span className="text-xs font-semibold text-sky-400">Mbps</span>
           </p>
-          <p className="text-[11px] text-[#A855F7]/80 mt-1 font-mono">Real-Time RTP</p>
+          <p className="text-[11px] text-sky-400/70 mt-1 font-mono">Real-Time RTP</p>
         </div>
 
-        {/* Card 3: Live Render FPS (#b38FB9) */}
-        <div className="relative overflow-hidden rounded-2xl bg-[#16121f]/80 p-5 border border-purple-500/25 shadow-xl shadow-black/70 backdrop-blur-xl flex flex-col items-center group hover:border-purple-400/45 hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(179,143,185,0.25)] transition-all duration-300">
-          <div className="absolute inset-x-4 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#b38FB9]/50 to-transparent" />
-          <div className="w-10 h-10 rounded-xl bg-pink-500/15 border border-pink-400/30 flex items-center justify-center text-[#b38FB9] mb-3 shadow-[0_0_15px_rgba(179,143,185,0.3)]">
-            <Zap size={20} />
+        {/* Card 3: Live Render FPS - State: Transferring/P2P (Electric Cyan #38bdf8) */}
+        <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] p-5 border border-white/[0.08] flex flex-col items-center group hover:border-white/[0.15] transition-colors duration-200">
+          <div className="absolute inset-x-4 top-0 h-[1px] bg-gradient-to-r from-transparent via-sky-400/25 to-transparent" />
+          <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-3">
+            <Zap size={18} />
           </div>
-          <p className="text-[#a1a1aa] text-xs font-medium text-center">Live Render FPS</p>
+          <p className="text-slate-400 text-xs font-medium text-center">Live Render FPS</p>
           <p className="text-2xl font-black text-white mt-1 tracking-tight">
-            {renderFps} <span className="text-xs font-semibold text-[#b38FB9]">FPS</span>
+            {renderFps} <span className="text-xs font-semibold text-sky-400">FPS</span>
           </p>
-          <p className="text-[11px] text-[#b38FB9]/80 mt-1 font-mono">Sub-100ms Latency</p>
+          <p className="text-[11px] text-slate-500 mt-1 font-mono">Sub-100ms Latency</p>
         </div>
 
-        {/* Card 4: Bandwidth Saved (#34d399) */}
-        <div className="relative overflow-hidden rounded-2xl bg-[#16121f]/80 p-5 border border-purple-500/25 shadow-xl shadow-black/70 backdrop-blur-xl flex flex-col items-center group hover:border-purple-400/45 hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(52,211,153,0.25)] transition-all duration-300">
-          <div className="absolute inset-x-4 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#34d399]/50 to-transparent" />
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-400/30 flex items-center justify-center text-[#34d399] mb-3 shadow-[0_0_15px_rgba(52,211,153,0.3)]">
-            <HardDrive size={20} />
+        {/* Card 4: Bandwidth Saved - State: Active/Success (Emerald #10b981) */}
+        <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] p-5 border border-white/[0.08] flex flex-col items-center group hover:border-white/[0.15] transition-colors duration-200">
+          <div className="absolute inset-x-4 top-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-400/25 to-transparent" />
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-3">
+            <HardDrive size={18} />
           </div>
-          <p className="text-[#a1a1aa] text-xs font-medium text-center">Bandwidth Saved</p>
+          <p className="text-slate-400 text-xs font-medium text-center">Bandwidth Saved</p>
           <p className="text-2xl font-black text-white mt-1 tracking-tight">
-            {megabytesSaved} <span className="text-xs font-semibold text-[#34d399]">MB</span>
+            {megabytesSaved} <span className="text-xs font-semibold text-emerald-400">MB</span>
           </p>
-          <p className="text-[11px] text-[#34d399]/80 mt-1 font-mono">Direct P2P Offload</p>
+          <p className="text-[11px] text-emerald-400/70 mt-1 font-mono">Direct P2P Offload</p>
         </div>
 
       </div>
@@ -309,14 +313,14 @@ export default function StreamDashboard({ videoId }) {
           <div className="flex items-center justify-between px-2">
             <button
               onClick={handleLoadDemoStream}
-              className="text-xs text-[#B39CD0] hover:text-white hover:underline flex items-center gap-1 font-semibold transition-colors cursor-pointer"
+              className="text-xs text-sky-400 hover:text-sky-300 hover:underline flex items-center gap-1 font-medium transition-colors cursor-pointer"
             >
               ✦ Or load sample MUX HLS test stream
             </button>
             {activeSource && (
               <button
                 onClick={() => setShowDropZone(false)}
-                className="text-xs text-gray-400 hover:text-gray-200 underline cursor-pointer"
+                className="text-xs text-slate-400 hover:text-slate-200 underline cursor-pointer"
               >
                 Hide drop zone
               </button>
@@ -325,19 +329,19 @@ export default function StreamDashboard({ videoId }) {
         </div>
       )}
 
-      {/* Active Stream Control Bar - Purple Glass */}
+      {/* Active Stream Control Bar - Neutral Dark Chassis #0d1322 */}
       {activeSource && !showDropZone && (
-        <div className="relative overflow-hidden rounded-2xl bg-[#16121f]/90 border border-purple-500/35 p-4 shadow-xl backdrop-blur-xl flex flex-wrap items-center justify-between gap-3 shadow-[0_0_25px_rgba(168,85,247,0.15)]">
-          <div className="absolute inset-x-6 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-purple-300/40 to-transparent" />
+        <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] border border-white/[0.08] p-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="absolute inset-x-6 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.15] to-transparent" />
           <div className="flex items-center gap-3.5">
-            <div className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,1)]"></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
             <div>
               <div className="flex items-center gap-2.5">
                 <span className="font-bold text-white text-sm tracking-tight">{activeTitle}</span>
-                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border ${
                   isP2P 
-                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-[0_0_10px_rgba(168,85,247,0.2)]' 
-                    : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                    ? 'bg-sky-500/10 text-sky-400 border-sky-500/20' 
+                    : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                 }`}>
                   {roleLabel}
                 </span>
@@ -348,14 +352,14 @@ export default function StreamDashboard({ videoId }) {
           <div className="flex items-center gap-2.5">
             <button
               onClick={() => setShowDropZone(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-white border border-white/15 transition-all duration-200 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.12] text-slate-200 border border-white/[0.08] transition-colors duration-200 cursor-pointer"
             >
               <RefreshCw size={13} />
               <span>Change Video</span>
             </button>
             <button
               onClick={handleClearVideo}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/35 transition-all duration-200 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition-colors duration-200 cursor-pointer"
             >
               <X size={13} />
               <span>Stop Stream</span>
@@ -364,9 +368,9 @@ export default function StreamDashboard({ videoId }) {
         </div>
       )}
 
-      {/* Video Player Display - Deep Obsidian Shell */}
-      <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-purple-950/50 border border-purple-500/30 bg-[#0c0912] min-h-[380px] flex items-center justify-center">
-        <div className="absolute -inset-1 bg-gradient-to-r from-purple-600/15 via-indigo-600/10 to-violet-600/15 blur-xl pointer-events-none -z-10" />
+      {/* Video Player Display - Neutral Chassis #06080e with 1px border-white/[0.08] */}
+      <div className="relative rounded-2xl overflow-hidden border border-white/[0.08] bg-[#06080e] min-h-[380px] flex items-center justify-center">
+        <div className="absolute inset-x-6 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.12] to-transparent pointer-events-none z-10" />
         
         <VideoPlayer 
           videoSource={activeSource} 

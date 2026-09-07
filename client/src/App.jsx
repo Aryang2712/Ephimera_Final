@@ -18,10 +18,10 @@ export default function App() {
     );
   }
 
-  // 2. When 'Launch Live P2P Player' is clicked, show StreamDashboard with pure black background and Thinking Dots
+  // 2. When 'Launch Live P2P Player' is clicked, show StreamDashboard on neutral dark chassis #090d16
   return (
-    <div className="min-h-screen bg-black text-[#f3f4f6] relative overflow-x-hidden selection:bg-purple-600 selection:text-white">
-      {/* React Bits "Thinking Dots" Breathing Matrix Background in Meteorite #362A83 over pitch black */}
+    <div className="min-h-screen bg-[#090d16] text-[#f3f4f6] relative overflow-x-hidden selection:bg-sky-500/30 selection:text-white">
+      {/* React Bits "Thinking Dots" Breathing Matrix Background in Meteorite #362A83 on #090d16 */}
       <ThinkingDots
         dotSpacing={30}
         baseDotSize={1.2}
@@ -34,15 +34,8 @@ export default function App() {
         interactive={true}
       />
 
-      {/* Subtle deep ambient glow behind dots */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[160px]" />
-        <div className="absolute top-1/3 -right-32 w-[30rem] h-[30rem] bg-indigo-600/10 rounded-full blur-[180px]" />
-        <div className="absolute -bottom-20 left-1/3 w-[28rem] h-[28rem] bg-violet-600/10 rounded-full blur-[160px]" />
-      </div>
-
-      {/* Top Header Bar with Purple Glassmorphism */}
-      <header className="relative z-50 bg-[#0d0914]/85 backdrop-blur-xl border-b border-purple-500/25 px-6 py-3.5 sticky top-0 shadow-2xl shadow-black/80">
+      {/* Top Header Bar - Crisp Neutral Dark Chassis #090d16 with 1px border-white/[0.08] */}
+      <header className="relative z-50 bg-[#090d16]/90 backdrop-blur-md border-b border-white/[0.08] px-6 py-3.5 sticky top-0 shadow-sm shadow-black/60">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3.5">
             {/* Ephimera Brand Logo */}
@@ -61,18 +54,18 @@ export default function App() {
                 </g>
               </svg>
             </div>
-            <div className="h-4 w-px bg-purple-500/30" />
+            <div className="h-4 w-px bg-white/[0.08]" />
             <div className="flex items-center gap-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-              <span className="text-xs text-purple-300 font-mono tracking-wide">P2P Mesh Active</span>
+              <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+              <span className="text-xs text-slate-300 font-mono tracking-wide">P2P Mesh Active</span>
             </div>
           </div>
           
           <button
             onClick={() => setShowDashboard(false)}
-            className="flex items-center space-x-2 text-xs font-bold bg-purple-600/20 hover:bg-purple-600/50 text-white px-3.5 py-1.8 rounded-lg transition duration-200 border border-purple-500/40 hover:border-purple-400/70 shadow-sm backdrop-blur-md cursor-pointer group"
+            className="flex items-center space-x-2 text-xs font-semibold bg-white/[0.05] hover:bg-white/[0.1] text-slate-200 hover:text-white px-3.5 py-1.8 rounded-lg transition duration-200 border border-white/[0.08] hover:border-white/[0.15] shadow-sm backdrop-blur-md cursor-pointer group"
           >
-            <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform duration-200 text-purple-300" />
+            <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform duration-200 text-slate-400 group-hover:text-white" />
             <span>HOME</span>
           </button>
         </div>
