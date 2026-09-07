@@ -57,12 +57,12 @@ export default function StreamDashboard({ videoId }) {
   const [copied, setCopied] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
 
-  // Live Typewriter Effect
-  const { displayedText: titleText, isTyping: isTitleTyping } = useTypewriter('EPHIMERA CDN Node', 55, 100);
+  // Live Typewriter Effect (tuned 10% slower for deliberate cinematic cadence)
+  const { displayedText: titleText, isTyping: isTitleTyping } = useTypewriter('EPHIMERA CDN Node', 68, 120);
   const { displayedText: subText, isTyping: isSubTyping } = useTypewriter(
     'Real-Time P2P Live Video Mesh & Decentralized Edge Streaming',
-    22,
-    1150
+    26,
+    1350
   );
 
   useEffect(() => {
@@ -184,13 +184,13 @@ export default function StreamDashboard({ videoId }) {
       {/* Header with White Text and Live Typewriter Effect */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight flex items-center">
+          <h1 className="text-4xl sm:text-[2.75rem] font-black text-white tracking-tight flex items-center leading-none">
             <span>{titleText}</span>
             {isTitleTyping && (
-              <span className="inline-block ml-1.5 w-1 h-8 bg-purple-400 animate-pulse shadow-[0_0_12px_rgba(168,85,247,0.9)] rounded-sm" />
+              <span className="inline-block ml-2 w-1.5 h-9 sm:h-11 bg-purple-400 animate-pulse shadow-[0_0_14px_rgba(168,85,247,0.95)] rounded-sm" />
             )}
           </h1>
-          <p className="text-xs sm:text-sm text-[#B39CD0] mt-1 font-mono flex items-center min-h-[1.4rem] tracking-wide">
+          <p className="text-xs sm:text-sm text-[#B39CD0] mt-2 font-mono flex items-center min-h-[1.4rem] tracking-wide">
             <span>{subText}</span>
             {isSubTyping && (
               <span className="inline-block ml-1 w-2 h-4 bg-purple-400 animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
