@@ -734,15 +734,29 @@ export function useWebRTC(roomId = 'ephimera-global-room') {
       if (existing?.pc && !['closed', 'failed'].includes(existing.pc.connectionState)) {
         return; // already connected or connecting
       }
-      console.log(`👋 Discovering peer ${peerId.substring(0, 8)} — sending offer...`);
-      const peer = createPeerConnectionForPeer(peerId);
-      peer.makingOffer = true;
-      try {
-        const offer = await peer.pc.createOffer();
-        await peer.pc.setLocalDescription(offer);
-        sendSignal(peerId, 'offer', peer.pc.localDescription);
-      } finally {
-        peer.makingOffer = false;
+
+      if (!peersRef.current[peerId]) {
+        createPeerConnectionForPeer(peerId);
+      }
+
+      // Deterministic tie-breaker: the peer with the lexicographically higher
+      // clientId sends the offer. The other peer creates their PC and awaits the offer.
+      // This completely prevents WebRTC glare / collision on simultaneous joins.
+      if (myClientId > peerId) {
+        console.log(`👋 [${myClientId.substring(0, 4)} > ${peerId.substring(0, 4)}] Initiating offer to peer ${peerId.substring(0, 8)}...`);
+        const peer = peersRef.current[peerId];
+        peer.makingOffer = true;
+        try {
+          const offer = await peer.pc.createOffer();
+          await peer.pc.setLocalDescription(offer);
+          sendSignal(peerId, 'offer', peer.pc.localDescription);
+        } catch (e) {
+          console.warn('Create offer error:', e);
+        } finally {
+          peer.makingOffer = false;
+        }
+      } else {
+        console.log(`⏳ [${myClientId.substring(0, 4)} < ${peerId.substring(0, 4)}] Awaiting offer from peer ${peerId.substring(0, 8)}...`);
       }
     },
     [myClientId, createPeerConnectionForPeer, sendSignal]
@@ -815,18 +829,8 @@ export function useWebRTC(roomId = 'ephimera-global-room') {
 
     connect();
 
-    // Heartbeat discovery: broadcast join every 3.5s while waiting for peers
-    const discoveryInterval = setInterval(() => {
-      if (ws.current?.readyState === WebSocket.OPEN && Object.keys(peersRef.current).length === 0) {
-        try {
-          ws.current.send(JSON.stringify({ type: 'join', room: roomId, clientId: myClientId }));
-        } catch (e) {}
-      }
-    }, 3500);
-
     return () => {
       isDisposed = true;
-      clearInterval(discoveryInterval);
       if (reconnectTimer) clearTimeout(reconnectTimer);
       if (socket) {
         try { socket.close(); } catch (e) {}
