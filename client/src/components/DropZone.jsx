@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { processVideoFile, formatBytes } from '../utils/videoChunker';
-import { UploadCloud, Film, Loader2, Play } from 'lucide-react';
+import { UploadCloud, Loader2, Play, Sparkles } from 'lucide-react';
 
 export default function DropZone({ onVideoLoaded, disabled = false }) {
     const [isDragging, setIsDragging] = useState(false);
@@ -29,11 +29,10 @@ export default function DropZone({ onVideoLoaded, disabled = false }) {
         }
 
         setLoading(true);
-        setStatusText(`Chunking "${file.name}" (${formatBytes(file.size)})...`);
+        setStatusText(`Preparing "${file.name}" for live streaming...`);
         try {
             const { manifest, chunkStore } = await processVideoFile(file);
             const objectUrl = URL.createObjectURL(file);
-            setStatusText(`Ready! ${manifest.totalChunks} chunks generated.`);
             onVideoLoaded({
                 file,
                 manifest,
@@ -42,7 +41,7 @@ export default function DropZone({ onVideoLoaded, disabled = false }) {
                 title: file.name
             });
         } catch (err) {
-            console.error('Failed to chunk video file:', err);
+            console.error('Failed to process video file:', err);
             alert('Error processing video file: ' + err.message);
         } finally {
             setLoading(false);
@@ -66,7 +65,6 @@ export default function DropZone({ onVideoLoaded, disabled = false }) {
         if (file) {
             await handleFile(file);
         }
-        // Reset input so same file can be selected again if needed
         e.target.value = '';
     };
 
@@ -102,8 +100,8 @@ export default function DropZone({ onVideoLoaded, disabled = false }) {
                             <Loader2 size={26} />
                         </div>
                         <div>
-                            <p className="font-semibold text-gray-800 text-sm">{statusText || 'Processing Video...'}</p>
-                            <p className="text-xs text-gray-500 mt-1">Generating P2P chunks (1MB each) for mesh streaming</p>
+                            <p className="font-semibold text-gray-800 text-sm">{statusText || 'Initializing Live Stream...'}</p>
+                            <p className="text-xs text-gray-500 mt-1">Starting real-time P2P video streaming across connected peers</p>
                         </div>
                     </>
                 ) : (
@@ -115,16 +113,16 @@ export default function DropZone({ onVideoLoaded, disabled = false }) {
                         </div>
                         <div>
                             <p className="font-semibold text-gray-800 text-base">
-                                Drag & drop a video file here, or <span className="text-blue-600 underline">browse</span>
+                                Drag & drop a video to stream live, or <span className="text-blue-600 underline">browse</span>
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
-                                Supports MP4, WebM & QuickTime • Only your selected video will stream across the P2P network
+                                Supports MP4, WebM & QuickTime • Live frame-by-frame P2P rendering on peer devices
                             </p>
                         </div>
                         <div className="flex items-center gap-2 pt-1">
-                            <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-600 bg-gray-100 px-2.5 py-1 rounded-md">
-                                <Film size={13} className="text-gray-500" />
-                                1 MB P2P Chunks
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-purple-700 bg-purple-50 px-2.5 py-1 rounded-md">
+                                <Sparkles size={13} className="text-purple-600" />
+                                Real-time Live Rendering
                             </span>
                             <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md">
                                 <Play size={13} className="text-blue-600" />

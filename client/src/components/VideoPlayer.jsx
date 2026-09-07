@@ -1,103 +1,203 @@
 import React, { useEffect, useRef } from 'react';
 import Hls from 'hls.js';
-import { Film, Radio } from 'lucide-react';
+import { Film } from 'lucide-react';
 
 export default function VideoPlayer({ 
   videoSource = null, 
   isHls = false, 
   title = '',
-  isP2P = false 
+  isP2P = false,
+  isHost = false,
+  onStreamReady = null
 }) {
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
+  const isSyncingRef = useRef(false);
 
+  // ── Sync play/pause/seek from Host to Peers ────────────────────────────────
   useEffect(() => {
-    // If no video is selected, do nothing and clean up previous HLS instance
-    if (!videoSource) {
+    const video = videoRef.current;
+    if (!video || !videoSource) return;
+
+    if (isHost) {
+      const sendControl = (type, payload = {}) => {
+        window.broadcastControlToPeers?.({ type, ...payload });
+      };
+
+      const onPlay = () => sendControl('sync-play', { currentTime: video.currentTime });
+      const onPause = () => sendControl('sync-pause', { currentTime: video.currentTime });
+      const onSeeked = () => {
+        if (!isSyncingRef.current) {
+          sendControl('sync-seek', { currentTime: video.currentTime });
+        }
+      };
+
+      video.addEventListener('play', onPlay);
+      video.addEventListener('pause', onPause);
+      video.addEventListener('seeked', onSeeked);
+
+      return () => {
+        video.removeEventListener('play', onPlay);
+        video.removeEventListener('pause', onPause);
+        video.removeEventListener('seeked', onSeeked);
+      };
+    } else {
+      const handleRemoteControl = (e) => {
+        const { type, currentTime } = e.detail;
+        isSyncingRef.current = true;
+        if (type === 'sync-play') {
+          if (currentTime !== undefined && Math.abs(video.currentTime - currentTime) > 0.3) {
+            video.currentTime = currentTime;
+          }
+          video.play().catch(() => {});
+        } else if (type === 'sync-pause') {
+          if (currentTime !== undefined) {
+            video.currentTime = currentTime;
+          }
+          video.pause();
+        } else if (type === 'sync-seek') {
+          if (currentTime !== undefined) {
+            video.currentTime = currentTime;
+          }
+        }
+        setTimeout(() => {
+          isSyncingRef.current = false;
+        }, 200);
+      };
+
+      window.addEventListener('p2p-video-control', handleRemoteControl);
+      return () => window.removeEventListener('p2p-video-control', handleRemoteControl);
+    }
+  }, [videoSource, isHost]);
+
+  // ── Video Source & Live Streaming Setup ────────────────────────────────────
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!videoSource || !video) {
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
       }
-      if (videoRef.current) {
-        videoRef.current.removeAttribute('src');
-        videoRef.current.load();
+      if (video) {
+        video.srcObject = null;
+        video.removeAttribute('src');
+        video.load();
       }
+      return;
+    }
+
+    // 1. Live WebRTC MediaStream (instant P2P stream)
+    if (typeof MediaStream !== 'undefined' && videoSource instanceof MediaStream) {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+      video.srcObject = videoSource;
+      video.play().catch((err) => console.log('Live stream play:', err.message));
       return;
     }
 
     const checkIsHls = isHls || (typeof videoSource === 'string' && videoSource.includes('.m3u8'));
 
-    if (checkIsHls && Hls.isSupported() && videoRef.current) {
+    // 2. HLS Live Stream
+    if (checkIsHls && Hls.isSupported()) {
       if (hlsRef.current) {
         hlsRef.current.destroy();
       }
+      video.srcObject = null;
 
       class P2PLoader extends Hls.DefaultConfig.loader {
         constructor(config) {
           super(config);
+          const originalLoad = this.load.bind(this);
           this.load = (context, config, callbacks) => {
             const segmentUrl = context.url;
-            console.log("🎥 HLS requesting segment:", segmentUrl);
 
-            // 1. Check if another laptop already sent us this chunk!
             if (window.P2PBuffer && window.P2PBuffer[segmentUrl]) {
-              console.log("🚀 SAVING BANDWIDTH! Serving from P2P:", segmentUrl);
-              callbacks.onSuccess({ 
-                url: context.url, 
-                data: window.P2PBuffer[segmentUrl] 
-              }, context.stats, context);
+              const data = window.P2PBuffer[segmentUrl];
+              const byteLen = data.byteLength || 0;
+              callbacks.onSuccess(
+                { url: context.url, data },
+                {
+                  trequest: performance.now(),
+                  tfirst: performance.now(),
+                  tload: performance.now(),
+                  loaded: byteLen,
+                  total: byteLen,
+                  retry: 0
+                },
+                context
+              );
               return;
             }
 
-            // 2. Fallback: download from the origin server normally
             const standardSuccess = callbacks.onSuccess;
             callbacks.onSuccess = (response, stats, context) => {
-              console.log("📦 Origin Server downloaded a chunk:", segmentUrl);
-              
               if (!window.P2PBuffer) window.P2PBuffer = {};
               window.P2PBuffer[segmentUrl] = response.data;
-              
-              // 3. Tell WebRTC to broadcast this new chunk to the team
+
               if (window.broadcastToPeers) {
-                console.log("📤 Handing chunk to WebRTC pipe!");
                 window.broadcastToPeers(segmentUrl, response.data);
-              } else {
-                console.warn("❌ WARNING: window.broadcastToPeers is MISSING!");
               }
-              
+
               standardSuccess(response, stats, context);
             };
 
-            super.load(context, config, callbacks);
+            originalLoad(context, config, callbacks);
           };
         }
       }
 
       const hls = new Hls({
         fLoader: P2PLoader,
-        maxBufferSize: 60 * 1000 * 1000 // 60MB buffer
+        pLoader: P2PLoader,
+        maxBufferSize: 60 * 1000 * 1000
       });
 
       hlsRef.current = hls;
       hls.loadSource(videoSource);
-      hls.attachMedia(videoRef.current);
+      hls.attachMedia(video);
 
       return () => {
         hls.destroy();
         hlsRef.current = null;
       };
-    } else if (videoRef.current) {
-      // Standard video file or Object URL
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-      videoRef.current.src = videoSource;
-      videoRef.current.play().catch((err) => {
-        console.log("Autoplay prevented or waiting for interaction:", err.message);
-      });
     }
-  }, [videoSource, isHls]);
+
+    // 3. Regular Video URL / Object URL
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+    video.srcObject = null;
+    video.src = videoSource;
+
+    const handleLoadedData = () => {
+      if (isHost && onStreamReady) {
+        try {
+          const stream = video.captureStream?.(60) || video.mozCaptureStream?.(60) || video.captureStream?.() || video.mozCaptureStream?.();
+          if (stream) {
+            stream.getVideoTracks().forEach((track) => {
+              if ('contentHint' in track) {
+                track.contentHint = 'detail';
+              }
+            });
+            console.log('🎥 Captured 60FPS HD video stream from host, streaming to peers...');
+            onStreamReady(stream);
+          }
+        } catch (e) {
+          console.warn('captureStream not available:', e);
+        }
+      }
+    };
+
+    video.addEventListener('loadeddata', handleLoadedData);
+    video.play().catch((err) => console.log('Autoplay:', err.message));
+
+    return () => {
+      video.removeEventListener('loadeddata', handleLoadedData);
+    };
+  }, [videoSource, isHls, isHost, onStreamReady]);
 
   if (!videoSource) {
     return (
@@ -107,11 +207,11 @@ export default function VideoPlayer({
         </div>
         <h3 className="text-white font-semibold text-lg">Player Standby</h3>
         <p className="text-gray-400 text-sm max-w-md mt-1">
-          No stream currently active. Drag & drop a video file above so only your chosen video is streamed across the P2P network.
+          No stream currently active. Drag &amp; drop a video file or launch the live stream above to share across the P2P network.
         </p>
         <div className="mt-4 flex items-center gap-2 text-xs text-gray-500 font-mono">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>P2P Engine Ready • Awaiting Stream</span>
+          <span>P2P Engine Ready • Mesh Active</span>
         </div>
       </div>
     );
@@ -121,7 +221,7 @@ export default function VideoPlayer({
     <div className="relative w-full h-full bg-black rounded-xl overflow-hidden shadow-lg border-2 border-gray-800">
       <video 
         ref={videoRef} 
-        controls 
+        controls={isHost} 
         autoPlay 
         playsInline
         className="w-full h-full object-contain max-h-[520px]"
@@ -131,7 +231,7 @@ export default function VideoPlayer({
       <div className="absolute top-3 left-3 flex items-center gap-2 pointer-events-none">
         <div className="bg-black/75 text-emerald-400 text-xs px-2.5 py-1 rounded-md font-mono backdrop-blur-md border border-white/10 flex items-center gap-1.5 shadow-sm">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>{isP2P ? 'P2P PEER STREAM' : 'LOCAL SEEDER'}</span>
+          <span>{isP2P ? 'P2P LIVE STREAM' : 'LOCAL HOST / SEEDER'}</span>
         </div>
         {title && (
           <div className="bg-black/75 text-gray-200 text-xs px-2.5 py-1 rounded-md font-sans backdrop-blur-md border border-white/10 truncate max-w-[200px] sm:max-w-xs shadow-sm">

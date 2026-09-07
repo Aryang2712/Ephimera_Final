@@ -56,7 +56,7 @@ wss.on('connection', (ws, req) => {
     wss.clients.forEach((client) => {
       if (client !== ws && client.readyState === WebSocket.OPEN) {
         // If message is for a specific target peer, only send to them
-        if (targetClientId && client.clientId && client.clientId !== targetClientId) {
+        if (targetClientId && client.clientId !== targetClientId) {
           return;
         }
         client.send(message.toString());
@@ -79,7 +79,7 @@ wss.on('connection', (ws, req) => {
 console.log('🚀 Epimera Signaling Server running on port 8080 (0.0.0.0)');
 const localIps = getLocalIps();
 if (localIps.length > 0) {
-  console.log('📡 Local Wi-Fi IP(s) for 2nd Laptop to connect:');
+  console.log('📡 Local Wi-Fi IP(s) for other Laptops to connect:');
   localIps.forEach((item) => {
     console.log(`   ➜ ${item.name}: http://${item.ip}:5173  (Signaling: ws://${item.ip}:8080)`);
   });
