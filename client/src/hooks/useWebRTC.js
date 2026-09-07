@@ -735,28 +735,17 @@ export function useWebRTC(roomId = 'ephimera-global-room') {
         return; // already connected or connecting
       }
 
-      if (!peersRef.current[peerId]) {
-        createPeerConnectionForPeer(peerId);
-      }
-
-      // Deterministic tie-breaker: the peer with the lexicographically higher
-      // clientId sends the offer. The other peer creates their PC and awaits the offer.
-      // This completely prevents WebRTC glare / collision on simultaneous joins.
-      if (myClientId > peerId) {
-        console.log(`👋 [${myClientId.substring(0, 4)} > ${peerId.substring(0, 4)}] Initiating offer to peer ${peerId.substring(0, 8)}...`);
-        const peer = peersRef.current[peerId];
-        peer.makingOffer = true;
-        try {
-          const offer = await peer.pc.createOffer();
-          await peer.pc.setLocalDescription(offer);
-          sendSignal(peerId, 'offer', peer.pc.localDescription);
-        } catch (e) {
-          console.warn('Create offer error:', e);
-        } finally {
-          peer.makingOffer = false;
-        }
-      } else {
-        console.log(`⏳ [${myClientId.substring(0, 4)} < ${peerId.substring(0, 4)}] Awaiting offer from peer ${peerId.substring(0, 8)}...`);
+      console.log(`👋 New peer joined (${peerId.substring(0, 8)}) — sending WebRTC offer...`);
+      const peer = createPeerConnectionForPeer(peerId);
+      peer.makingOffer = true;
+      try {
+        const offer = await peer.pc.createOffer();
+        await peer.pc.setLocalDescription(offer);
+        sendSignal(peerId, 'offer', peer.pc.localDescription);
+      } catch (e) {
+        console.warn('Create offer error on new peer join:', e);
+      } finally {
+        peer.makingOffer = false;
       }
     },
     [myClientId, createPeerConnectionForPeer, sendSignal]
