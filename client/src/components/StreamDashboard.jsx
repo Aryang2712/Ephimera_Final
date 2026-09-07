@@ -191,11 +191,8 @@ export default function StreamDashboard({ videoId }) {
           </h1>
           <p className="text-xs sm:text-sm text-gray-200 mt-1 font-mono flex items-center min-h-[1.4rem]">
             <span>{subText}</span>
-            {(isSubTyping || (!isTitleTyping && !subText)) && (
+            {isSubTyping && (
               <span className="inline-block ml-1 w-2 h-4 bg-purple-400 animate-pulse shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
-            )}
-            {!isSubTyping && subText && (
-              <span className="inline-block ml-1 w-2 h-4 bg-purple-400/80 animate-pulse opacity-75" />
             )}
           </p>
         </div>
