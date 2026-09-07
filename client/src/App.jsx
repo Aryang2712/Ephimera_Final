@@ -56,10 +56,10 @@ export default function App() {
           
           <button
             onClick={() => setShowDashboard(false)}
-            className="flex items-center space-x-2 text-xs font-semibold bg-white/5 hover:bg-purple-600/80 text-white px-3.5 py-1.8 rounded-lg transition duration-200 border border-white/15 hover:border-purple-400/50 shadow-sm backdrop-blur-md cursor-pointer group"
+            className="flex items-center space-x-2 text-xs font-bold bg-white/10 hover:bg-white/20 text-white px-3.5 py-1.5 rounded-lg transition duration-200 border border-white/20 hover:border-white/40 shadow-sm backdrop-blur-md cursor-pointer group"
           >
             <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform duration-200" />
-            <span>Back to Landing</span>
+            <span>HOME</span>
           </button>
         </div>
       </header>
