@@ -801,7 +801,15 @@ export function useWebRTC(roomId = 'ephimera-global-room') {
           const peerId = data.clientId;
           if (!peerId) return;
 
-          console.log(`📥 Signaling [${data.type}] from ${peerId.substring(0, 8)}`);
+          if (data.type === 'room-peers') {
+            console.log('👥 Received active room peers from server:', data.peers);
+            (data.peers || []).forEach((id) => {
+              if (id && id !== myClientId) {
+                discoverPeer(id);
+              }
+            });
+            return;
+          }
 
           if (data.type === 'join') {
             await discoverPeer(peerId);

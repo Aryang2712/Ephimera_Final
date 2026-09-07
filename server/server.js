@@ -48,22 +48,43 @@ wss.on('connection', (ws, req) => {
     let msgType = 'unknown';
     let clientId = 'unknown';
     let targetClientId = null;
-    let room = null;
+    let room = 'ephimera-global-room';
     try {
       const parsed = JSON.parse(message.toString());
       msgType = parsed.type || 'data';
       clientId = parsed.clientId || 'anonymous';
       targetClientId = parsed.targetClientId || null;
-      room = parsed.room || null;
-      if (clientId) ws.clientId = clientId;
+      room = parsed.room || 'ephimera-global-room';
+      if (clientId && clientId !== 'anonymous') ws.clientId = clientId;
       if (room) ws.room = room;
+
+      // When a new client joins, immediately send them the list of all peers already in the room!
+      if (msgType === 'join') {
+        const existingPeers = [];
+        wss.clients.forEach((c) => {
+          if (c !== ws && c.readyState === WebSocket.OPEN && c.clientId && c.room === room) {
+            existingPeers.push(c.clientId);
+          }
+        });
+        try {
+          ws.send(JSON.stringify({
+            type: 'room-peers',
+            room,
+            peers: existingPeers
+          }));
+        } catch (e) {}
+      }
     } catch {}
 
     let recipientCount = 0;
-    // Broadcast handshake message to connected peers
+    // Broadcast handshake message to peers in the same room
     wss.clients.forEach((client) => {
       if (client !== ws && client.readyState === WebSocket.OPEN) {
-        // If message is for a specific target peer, only send to them
+        // Room isolation
+        if (ws.room && client.room && ws.room !== client.room) {
+          return;
+        }
+        // If message is targeted to a specific peer
         if (targetClientId && client.clientId !== targetClientId) {
           return;
         }
