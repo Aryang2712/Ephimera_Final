@@ -271,10 +271,7 @@ export default function StreamDashboard({ videoId }) {
             <div className="text-2xl sm:text-[1.75rem] font-black text-white tracking-tight leading-none">
               {isConnected ? '-50%' : 'Normal'}
             </div>
-            <div className="flex items-center gap-1.5 mt-2">
-              <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-sky-400/70'}`} />
-              <span className="text-[11px] text-slate-400 font-mono tracking-tight">Standby Fallback</span>
-            </div>
+            <p className="text-[11px] text-slate-400 font-mono tracking-tight mt-2">Standby Fallback</p>
           </div>
         </div>
         
@@ -296,10 +293,7 @@ export default function StreamDashboard({ videoId }) {
               <span>{bitrateMbps}</span>
               <span className="text-xs font-bold text-sky-400 uppercase font-mono">Mbps</span>
             </div>
-            <div className="flex items-center gap-1.5 mt-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-sky-400/80 animate-pulse" />
-              <span className="text-[11px] text-slate-400 font-mono tracking-tight">Real-Time RTP</span>
-            </div>
+            <p className="text-[11px] text-slate-400 font-mono tracking-tight mt-2">Real-Time RTP</p>
           </div>
         </div>
 
@@ -321,10 +315,7 @@ export default function StreamDashboard({ videoId }) {
               <span>{renderFps}</span>
               <span className="text-xs font-bold text-sky-400 uppercase font-mono">FPS</span>
             </div>
-            <div className="flex items-center gap-1.5 mt-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[11px] text-slate-400 font-mono tracking-tight">Sub-100ms Latency</span>
-            </div>
+            <p className="text-[11px] text-slate-400 font-mono tracking-tight mt-2">Sub-100ms Latency</p>
           </div>
         </div>
 
@@ -346,10 +337,7 @@ export default function StreamDashboard({ videoId }) {
               <span>{megabytesSaved}</span>
               <span className="text-xs font-bold text-sky-400 uppercase font-mono">MB</span>
             </div>
-            <div className="flex items-center gap-1.5 mt-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-sky-400/80 animate-pulse" />
-              <span className="text-[11px] text-slate-400 font-mono tracking-tight">Direct P2P Offload</span>
-            </div>
+            <p className="text-[11px] text-slate-400 font-mono tracking-tight mt-2">Direct P2P Offload</p>
           </div>
         </div>
 
