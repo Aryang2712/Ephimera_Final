@@ -753,57 +753,74 @@ export function useWebRTC(roomId) {
 
   useEffect(() => {
     window.P2PBuffer = window.P2PBuffer || {};
-    const serverUrl = getSignalingServerUrl();
-    console.log(`🔌 Connecting to signaling server at: ${serverUrl}`);
+    let socket = null;
+    let reconnectTimer = null;
+    let isDisposed = false;
 
-    let socket;
-    try {
-      socket = new WebSocket(serverUrl);
-      ws.current = socket;
-    } catch (e) {
-      console.warn('Signaling WebSocket connection failed:', e);
-      return;
-    }
+    const connect = () => {
+      if (isDisposed) return;
+      const serverUrl = getSignalingServerUrl();
+      console.log(`🔌 Connecting to signaling server at: ${serverUrl}`);
 
-    socket.onopen = () => {
-      console.log('🟢 Connected to signaling server. clientId:', myClientId.substring(0, 8));
-      socket.send(JSON.stringify({ type: 'join', room: roomId, clientId: myClientId }));
-    };
-
-    socket.onerror = (err) => {
-      console.warn('Signaling WebSocket error:', err);
-    };
-
-    socket.onmessage = async (message) => {
-      let data;
       try {
-        data = JSON.parse(message.data);
-      } catch {
-        return;
-      }
+        socket = new WebSocket(serverUrl);
+        ws.current = socket;
 
-      if (data.clientId === myClientId) return;
-      if (data.type === 'server-info') return;
-      if (data.targetClientId && data.targetClientId !== myClientId) return;
+        socket.onopen = () => {
+          console.log('🟢 Connected to signaling server. clientId:', myClientId.substring(0, 8));
+          socket.send(JSON.stringify({ type: 'join', room: roomId, clientId: myClientId }));
+        };
 
-      const peerId = data.clientId;
-      if (!peerId) return;
+        socket.onerror = (err) => {
+          console.warn('Signaling WebSocket error, will retry in 2s...', err);
+        };
 
-      console.log(`📥 Signaling [${data.type}] from ${peerId.substring(0, 8)}`);
+        socket.onclose = () => {
+          console.log('🔴 Signaling WebSocket closed. Retrying connection in 2.5s...');
+          if (!isDisposed) {
+            clearTimeout(reconnectTimer);
+            reconnectTimer = setTimeout(connect, 2500);
+          }
+        };
 
-      // All the actual handshake logic lives in discoverPeer/handleIncomingSignal
-      // now, so it's identical whether a message arrives via this WS server or
-      // gets relayed through the mesh (see the 'relay-signal' branch in
-      // setupDataChannelListeners above).
-      if (data.type === 'join') {
-        await discoverPeer(peerId);
-      } else if (data.type === 'offer' || data.type === 'answer' || data.type === 'ice-candidate') {
-        await handleIncomingSignal(data.type, peerId, data.payload);
+        socket.onmessage = async (message) => {
+          let data;
+          try {
+            data = JSON.parse(message.data);
+          } catch {
+            return;
+          }
+
+          if (data.clientId === myClientId) return;
+          if (data.type === 'server-info') return;
+          if (data.targetClientId && data.targetClientId !== myClientId) return;
+
+          const peerId = data.clientId;
+          if (!peerId) return;
+
+          console.log(`📥 Signaling [${data.type}] from ${peerId.substring(0, 8)}`);
+
+          if (data.type === 'join') {
+            await discoverPeer(peerId);
+          } else if (data.type === 'offer' || data.type === 'answer' || data.type === 'ice-candidate') {
+            await handleIncomingSignal(data.type, peerId, data.payload);
+          }
+        };
+      } catch (e) {
+        if (!isDisposed) {
+          reconnectTimer = setTimeout(connect, 2500);
+        }
       }
     };
+
+    connect();
 
     return () => {
-      if (socket) socket.close();
+      isDisposed = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (socket) {
+        try { socket.close(); } catch (e) {}
+      }
       Object.values(peersRef.current).forEach((peer) => {
         try {
           peer.pc.close();
