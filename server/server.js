@@ -14,8 +14,9 @@ function getLocalIps() {
   return ips;
 }
 
-// Bind to 0.0.0.0 so all LAN devices can connect
-const wss = new WebSocket.Server({ port: 8080, host: '0.0.0.0' });
+const PORT = process.env.PORT || 8080;
+// Bind to 0.0.0.0 so all cloud and LAN devices can connect
+const wss = new WebSocket.Server({ port: PORT, host: '0.0.0.0' });
 
 wss.on('connection', (ws, req) => {
   const remoteIp = req.socket.remoteAddress;

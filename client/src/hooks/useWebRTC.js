@@ -4,10 +4,28 @@ const getSignalingServerUrl = () => {
   if (typeof window === 'undefined') return 'ws://localhost:8080';
   const params = new URLSearchParams(window.location.search);
   const paramUrl = params.get('signaling');
-  if (paramUrl) return paramUrl;
+  if (paramUrl) {
+    if (paramUrl.startsWith('http://')) return paramUrl.replace('http://', 'ws://');
+    if (paramUrl.startsWith('https://')) return paramUrl.replace('https://', 'wss://');
+    return paramUrl;
+  }
 
+  // Support environment variable for cloud deployment (Render, Vercel, etc.)
+  const envUrl = import.meta.env?.VITE_SIGNALING_SERVER;
+  if (envUrl) {
+    if (envUrl.startsWith('http://')) return envUrl.replace('http://', 'ws://');
+    if (envUrl.startsWith('https://')) return envUrl.replace('https://', 'wss://');
+    return envUrl;
+  }
+
+  const isSecure = window.location.protocol === 'https:';
+  const wsProtocol = isSecure ? 'wss:' : 'ws:';
   const host = window.location.hostname;
+
   if (host && host !== 'localhost' && host !== '127.0.0.1') {
+    if (host.includes('loca.lt') || host.includes('ngrok') || host.includes('onrender.com') || host.includes('railway.app')) {
+      return `${wsProtocol}//${host}`;
+    }
     return `ws://${host}:8080`;
   }
   return 'ws://localhost:8080';
