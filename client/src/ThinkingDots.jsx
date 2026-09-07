@@ -2,18 +2,39 @@ import React, { useEffect, useRef } from 'react';
 import './ThinkingDots.css';
 
 /**
+ * Helper to convert Hex to RGB
+ */
+const hexToRgb = (hex) => {
+  const clean = hex.replace('#', '').trim();
+  if (clean.length === 3) {
+    return {
+      r: parseInt(clean[0] + clean[0], 16),
+      g: parseInt(clean[1] + clean[1], 16),
+      b: parseInt(clean[2] + clean[2], 16)
+    };
+  }
+  if (clean.length === 6) {
+    return {
+      r: parseInt(clean.slice(0, 2), 16),
+      g: parseInt(clean.slice(2, 4), 16),
+      b: parseInt(clean.slice(4, 6), 16)
+    };
+  }
+  return { r: 54, g: 42, b: 131 }; // Default #362A83
+};
+
+/**
  * ThinkingDots - React Bits Component
  * "A dot matrix breathing around a drifting cloud of density"
+ * All dots styled with uniform Meteorite color #362A83
  */
 export default function ThinkingDots({
   dotSpacing = 28,
   baseDotSize = 1.2,
   maxDotSize = 4.2,
-  baseOpacity = 0.12,
-  maxOpacity = 0.85,
-  dotColor = '#ffffff',
-  accentColor = '#A855F7',
-  iridescent = true,
+  baseOpacity = 0.25,
+  maxOpacity = 0.95,
+  dotColor = '#362A83',
   speed = 0.8,
   cloudCount = 3,
   interactive = true,
@@ -36,6 +57,8 @@ export default function ThinkingDots({
     let height = 0;
     let dpr = 1;
 
+    const rgb = hexToRgb(dotColor);
+
     // Mouse tracker
     const mouse = {
       x: -1000,
@@ -43,7 +66,7 @@ export default function ThinkingDots({
       targetX: -1000,
       targetY: -1000,
       active: false,
-      radius: 180
+      radius: 200
     };
 
     const handlePointerMove = (e) => {
@@ -80,19 +103,10 @@ export default function ThinkingDots({
 
     // Drifting clouds of density
     const clouds = [
-      { seedX: 0.15, seedY: 0.35, speedX: 0.32, speedY: 0.24, radius: 260, weight: 1.0 },
-      { seedX: 0.65, seedY: 0.75, speedX: -0.28, speedY: 0.38, radius: 300, weight: 0.85 },
-      { seedX: 0.85, seedY: 0.25, speedX: 0.22, speedY: -0.31, radius: 220, weight: 0.75 }
+      { seedX: 0.15, seedY: 0.35, speedX: 0.32, speedY: 0.24, radius: 280, weight: 1.0 },
+      { seedX: 0.65, seedY: 0.75, speedX: -0.28, speedY: 0.38, radius: 320, weight: 0.85 },
+      { seedX: 0.85, seedY: 0.25, speedX: 0.22, speedY: -0.31, radius: 240, weight: 0.75 }
     ].slice(0, Math.max(1, cloudCount));
-
-    // Rainbow iridescent color palette
-    const rainbowColors = [
-      'rgba(255, 107, 107, ',  // Coral red
-      'rgba(254, 202, 87, ',   // Gold yellow
-      'rgba(72, 219, 251, ',   // Cyan
-      'rgba(255, 159, 243, ',  // Pink
-      'rgba(168, 85, 247, '    // Purple
-    ];
 
     let startTime = performance.now();
 
@@ -158,26 +172,17 @@ export default function ThinkingDots({
           const radius = baseDotSize + (maxDotSize - baseDotSize) * Math.min(currentDensity, 1);
           const opacity = Math.min(1, baseOpacity + (maxOpacity - baseOpacity) * currentDensity);
 
-          // Draw dot
+          // Draw uniform #362A83 meteorite dot
           ctx.beginPath();
           ctx.arc(x, y, radius, 0, Math.PI * 2);
-
-          if (iridescent && currentDensity > 0.45) {
-            // Tinch of rainbow on higher-density nodes
-            const colorIdx = Math.floor((x + y + time * 60) * 0.02) % rainbowColors.length;
-            const rainbowColor = rainbowColors[Math.abs(colorIdx)];
-            ctx.fillStyle = `${rainbowColor}${opacity})`;
-          } else {
-            ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-          }
-
+          ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
           ctx.fill();
 
-          // Subtle glowing halo on dense clusters
-          if (currentDensity > 0.75) {
+          // Subtle glowing aura on dense clusters
+          if (currentDensity > 0.7) {
             ctx.beginPath();
             ctx.arc(x, y, radius * 2.2, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(168, 85, 247, ${opacity * 0.18})`;
+            ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity * 0.25})`;
             ctx.fill();
           }
         }
@@ -196,7 +201,7 @@ export default function ThinkingDots({
         window.removeEventListener('pointerleave', handlePointerLeave);
       }
     };
-  }, [dotSpacing, baseDotSize, maxDotSize, baseOpacity, maxOpacity, dotColor, accentColor, iridescent, speed, cloudCount, interactive]);
+  }, [dotSpacing, baseDotSize, maxDotSize, baseOpacity, maxOpacity, dotColor, speed, cloudCount, interactive]);
 
   return (
     <div ref={containerRef} className={`thinking-dots-container ${className}`.trim()} style={style}>

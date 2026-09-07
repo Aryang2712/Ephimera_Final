@@ -21,16 +21,16 @@ export default function App() {
   // 2. When 'Launch Live P2P Player' is clicked, show StreamDashboard with Thinking Dots background
   return (
     <div className="min-h-screen bg-[#120F17] text-[#f3f4f6] relative overflow-x-hidden selection:bg-purple-600 selection:text-white">
-      {/* React Bits "Thinking Dots" Breathing Matrix Background */}
+      {/* React Bits "Thinking Dots" Breathing Matrix Background in Meteorite #362A83 */}
       <ThinkingDots
         dotSpacing={30}
-        baseDotSize={1.1}
-        maxDotSize={3.8}
-        baseOpacity={0.12}
-        maxOpacity={0.75}
+        baseDotSize={1.2}
+        maxDotSize={4.0}
+        baseOpacity={0.25}
+        maxOpacity={0.95}
+        dotColor="#362A83"
         speed={0.75}
         cloudCount={3}
-        iridescent={true}
         interactive={true}
       />
 
