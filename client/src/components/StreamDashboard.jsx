@@ -251,57 +251,94 @@ export default function StreamDashboard({ videoId }) {
         </div>
       </div>
 
-      {/* Network Stats Cards - Strict Semantic State Colors & Neutral Dark Chassis */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Network Stats Cards - Reorganized Horizontal Layout: Label on top left, subtle icon/dot on top right, big metric value below */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* Card 1: Origin Server Load */}
-        <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] p-5 border border-white/[0.08] flex flex-col items-center group hover:border-white/[0.15] transition-colors duration-200">
+        <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] p-5 border border-white/[0.08] flex flex-col justify-between group hover:border-white/[0.15] transition-all duration-200">
           <div className="absolute inset-x-4 top-0 h-[1px] bg-gradient-to-r from-transparent via-sky-400/25 to-transparent" />
-          <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-3">
-            <Server size={18} />
+          
+          {/* Top Row: Label on Top Left, Subtle Status Dot/Icon on Top Right */}
+          <div className="flex items-center justify-between w-full">
+            <span className="text-xs font-medium text-slate-400 tracking-wide">Origin Server Load</span>
+            <div className="w-7 h-7 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shrink-0">
+              <Server size={14} />
+            </div>
           </div>
-          <p className="text-slate-400 text-xs font-medium text-center">Origin Server Load</p>
-          <p className="text-2xl font-black text-white mt-1 tracking-tight">{isConnected ? '-50%' : 'Normal'}</p>
-          <p className="text-[11px] text-sky-400/70 mt-1 font-mono">Standby</p>
+
+          {/* Big Metric Value Below */}
+          <div className="mt-3.5">
+            <div className="text-2xl sm:text-[1.75rem] font-black text-white tracking-tight leading-none">
+              {isConnected ? '-50%' : 'Normal'}
+            </div>
+            <p className="text-[11px] text-slate-400 font-mono tracking-tight mt-2">Standby Fallback</p>
+          </div>
         </div>
         
         {/* Card 2: Live P2P Bitrate */}
-        <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] p-5 border border-white/[0.08] flex flex-col items-center group hover:border-white/[0.15] transition-colors duration-200">
+        <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] p-5 border border-white/[0.08] flex flex-col justify-between group hover:border-white/[0.15] transition-all duration-200">
           <div className="absolute inset-x-4 top-0 h-[1px] bg-gradient-to-r from-transparent via-sky-400/25 to-transparent" />
-          <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-3">
-            <Radio size={18} />
+          
+          {/* Top Row: Label on Top Left, Subtle Status Dot/Icon on Top Right */}
+          <div className="flex items-center justify-between w-full">
+            <span className="text-xs font-medium text-slate-400 tracking-wide">Live P2P Bitrate</span>
+            <div className="w-7 h-7 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shrink-0">
+              <Radio size={14} />
+            </div>
           </div>
-          <p className="text-slate-400 text-xs font-medium text-center">Live P2P Bitrate</p>
-          <p className="text-2xl font-black text-white mt-1 tracking-tight">
-            {bitrateMbps} <span className="text-xs font-semibold text-sky-400">Mbps</span>
-          </p>
-          <p className="text-[11px] text-sky-400/70 mt-1 font-mono">Real-Time RTP</p>
+
+          {/* Big Metric Value Below */}
+          <div className="mt-3.5">
+            <div className="text-2xl sm:text-[1.75rem] font-black text-white tracking-tight leading-none flex items-baseline gap-1.5">
+              <span>{bitrateMbps}</span>
+              <span className="text-xs font-bold text-sky-400 uppercase font-mono">Mbps</span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-mono tracking-tight mt-2">Real-Time RTP</p>
+          </div>
         </div>
 
         {/* Card 3: Live Render FPS */}
-        <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] p-5 border border-white/[0.08] flex flex-col items-center group hover:border-white/[0.15] transition-colors duration-200">
+        <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] p-5 border border-white/[0.08] flex flex-col justify-between group hover:border-white/[0.15] transition-all duration-200">
           <div className="absolute inset-x-4 top-0 h-[1px] bg-gradient-to-r from-transparent via-sky-400/25 to-transparent" />
-          <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-3">
-            <Zap size={18} />
+          
+          {/* Top Row: Label on Top Left, Subtle Status Dot/Icon on Top Right */}
+          <div className="flex items-center justify-between w-full">
+            <span className="text-xs font-medium text-slate-400 tracking-wide">Live Render FPS</span>
+            <div className="w-7 h-7 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shrink-0">
+              <Zap size={14} />
+            </div>
           </div>
-          <p className="text-slate-400 text-xs font-medium text-center">Live Render FPS</p>
-          <p className="text-2xl font-black text-white mt-1 tracking-tight">
-            {renderFps} <span className="text-xs font-semibold text-sky-400">FPS</span>
-          </p>
-          <p className="text-[11px] text-sky-400/70 mt-1 font-mono">Sub-100ms Latency</p>
+
+          {/* Big Metric Value Below */}
+          <div className="mt-3.5">
+            <div className="text-2xl sm:text-[1.75rem] font-black text-white tracking-tight leading-none flex items-baseline gap-1.5">
+              <span>{renderFps}</span>
+              <span className="text-xs font-bold text-sky-400 uppercase font-mono">FPS</span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-mono tracking-tight mt-2">Sub-100ms Latency</p>
+          </div>
         </div>
 
         {/* Card 4: Bandwidth Saved */}
-        <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] p-5 border border-white/[0.08] flex flex-col items-center group hover:border-white/[0.15] transition-colors duration-200">
+        <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] p-5 border border-white/[0.08] flex flex-col justify-between group hover:border-white/[0.15] transition-all duration-200">
           <div className="absolute inset-x-4 top-0 h-[1px] bg-gradient-to-r from-transparent via-sky-400/25 to-transparent" />
-          <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-3">
-            <HardDrive size={18} />
+          
+          {/* Top Row: Label on Top Left, Subtle Status Dot/Icon on Top Right */}
+          <div className="flex items-center justify-between w-full">
+            <span className="text-xs font-medium text-slate-400 tracking-wide">Bandwidth Saved</span>
+            <div className="w-7 h-7 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shrink-0">
+              <HardDrive size={14} />
+            </div>
           </div>
-          <p className="text-slate-400 text-xs font-medium text-center">Bandwidth Saved</p>
-          <p className="text-2xl font-black text-white mt-1 tracking-tight">
-            {megabytesSaved} <span className="text-xs font-semibold text-sky-400">MB</span>
-          </p>
-          <p className="text-[11px] text-sky-400/70 mt-1 font-mono">Direct P2P Offload</p>
+
+          {/* Big Metric Value Below */}
+          <div className="mt-3.5">
+            <div className="text-2xl sm:text-[1.75rem] font-black text-white tracking-tight leading-none flex items-baseline gap-1.5">
+              <span>{megabytesSaved}</span>
+              <span className="text-xs font-bold text-sky-400 uppercase font-mono">MB</span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-mono tracking-tight mt-2">Direct P2P Offload</p>
+          </div>
         </div>
 
       </div>
