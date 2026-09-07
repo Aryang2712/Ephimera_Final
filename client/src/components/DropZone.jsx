@@ -79,12 +79,15 @@ export default function DropZone({ onVideoLoaded, disabled = false }) {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`relative rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer p-6 text-center ${
+            className={`relative overflow-hidden rounded-2xl border-2 border-dashed transition-colors duration-200 cursor-pointer p-8 text-center group ${
                 isDragging
-                    ? 'border-blue-500 bg-blue-50/80 scale-[1.01] shadow-md'
-                    : 'border-gray-300 bg-white hover:border-blue-400 hover:bg-gray-50/80 shadow-sm'
+                    ? 'border-sky-400 bg-sky-950/20'
+                    : 'border-white/[0.08] bg-[#0d1322] hover:border-white/[0.18] hover:bg-[#11182c]'
             } ${disabled || loading ? 'pointer-events-none opacity-80' : ''}`}
         >
+            {/* Crisp 1px gradient hairline border */}
+            <div className="absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.15] to-transparent" />
+
             <input
                 ref={fileInputRef}
                 type="file"
@@ -93,39 +96,41 @@ export default function DropZone({ onVideoLoaded, disabled = false }) {
                 onChange={handleFileInputChange}
             />
 
-            <div className="flex flex-col items-center justify-center space-y-3">
+            <div className="flex flex-col items-center justify-center space-y-3.5">
                 {loading ? (
                     <>
-                        <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 animate-spin">
-                            <Loader2 size={26} />
+                        <div className="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 animate-spin">
+                            <Loader2 size={24} />
                         </div>
                         <div>
-                            <p className="font-semibold text-gray-800 text-sm">{statusText || 'Initializing Live Stream...'}</p>
-                            <p className="text-xs text-gray-500 mt-1">Starting real-time P2P video streaming across connected peers</p>
+                            <p className="font-bold text-white text-base tracking-tight">{statusText || 'Initializing Live Stream...'}</p>
+                            <p className="text-xs text-slate-400 mt-1 font-mono">Starting real-time P2P video streaming across connected peers</p>
                         </div>
                     </>
                 ) : (
                     <>
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                            isDragging ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-600'
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-200 ${
+                            isDragging 
+                                ? 'bg-sky-500 text-white' 
+                                : 'bg-white/[0.04] border border-white/[0.08] text-slate-300 group-hover:border-white/[0.15] group-hover:text-white'
                         }`}>
-                            <UploadCloud size={26} />
+                            <UploadCloud size={24} />
                         </div>
                         <div>
-                            <p className="font-semibold text-gray-800 text-base">
-                                Drag & drop a video to stream live, or <span className="text-blue-600 underline">browse</span>
+                            <p className="font-bold text-white text-base sm:text-lg tracking-tight">
+                                Drag & drop a video to stream live, or <span className="text-sky-400 underline underline-offset-4 hover:text-sky-300">browse</span>
                             </p>
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-slate-400 mt-1">
                                 Supports MP4, WebM & QuickTime • Live frame-by-frame P2P rendering on peer devices
                             </p>
                         </div>
-                        <div className="flex items-center gap-2 pt-1">
-                            <span className="inline-flex items-center gap-1 text-xs font-medium text-purple-700 bg-purple-50 px-2.5 py-1 rounded-md">
-                                <Sparkles size={13} className="text-purple-600" />
+                        <div className="flex flex-wrap items-center justify-center gap-2 pt-1.5">
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 bg-white/[0.04] border border-white/[0.08] px-3 py-1 rounded-full">
+                                <Sparkles size={12} className="text-sky-400" />
                                 Real-time Live Rendering
                             </span>
-                            <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-50 px-2.5 py-1 rounded-md">
-                                <Play size={13} className="text-blue-600" />
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 bg-white/[0.04] border border-white/[0.08] px-3 py-1 rounded-full">
+                                <Play size={12} className="text-emerald-400" />
                                 Instant Local Playback
                             </span>
                         </div>
