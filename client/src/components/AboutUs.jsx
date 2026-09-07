@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowUpRight, Camera, ChevronRight, Layers, ShieldCheck, Cpu, Zap, Network } from 'lucide-react';
+import ParallaxCarousel from './ParallaxCarousel';
 import './AboutUs.css';
 
 const FAQ_ITEMS = [
@@ -126,34 +127,20 @@ export default function AboutUs({ onBackToLanding, onLaunchDashboard }) {
             </div>
           </section>
 
-          {/* Meet the Team Section */}
+          {/* Meet the Team Section with Parallax Carousel */}
           <section className="about-team-section">
             <h2 className="about-section-title">Meet the team</h2>
-            <div className="about-team-grid">
-              {/* Photo Skeleton 1 */}
-              <div className="about-photo-skeleton">
-                <Camera size={26} className="about-photo-icon" />
-                <span className="about-photo-tag">photo 1</span>
-              </div>
-
-              {/* Photo Skeleton 2 */}
-              <div className="about-photo-skeleton">
-                <Camera size={26} className="about-photo-icon" />
-                <span className="about-photo-tag">photo 2</span>
-              </div>
-
-              {/* Photo Skeleton 3 */}
-              <div className="about-photo-skeleton">
-                <Camera size={26} className="about-photo-icon" />
-                <span className="about-photo-tag">photo 3</span>
-              </div>
-
-              {/* Photo Skeleton 4 */}
-              <div className="about-photo-skeleton">
-                <Camera size={26} className="about-photo-icon" />
-                <span className="about-photo-tag">photo 4</span>
-              </div>
-            </div>
+            <ParallaxCarousel
+              items={[
+                { id: 1, name: 'photo 1', title: 'Core Swarm Engineering', subtitle: 'WebRTC data plane & chunk pipeline' },
+                { id: 2, name: 'photo 2', title: 'Distributed Systems Labs', subtitle: '650ms deadline race algorithms' },
+                { id: 3, name: 'photo 3', title: 'Media Architecture & Transcoding', subtitle: 'Real-time multi-rendition HLS & ABR' },
+                { id: 4, name: 'photo 4', title: 'Swarm Protocols & Cryptography', subtitle: 'HMAC auth & AES-128 key delivery' },
+              ]}
+              parallaxIntensity={0.25}
+              autoPlay={true}
+              autoPlaySpeed={4000}
+            />
           </section>
 
           {/* Trusted Brands Section */}
