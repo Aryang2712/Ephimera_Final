@@ -671,20 +671,20 @@ export default function LandingPage({ onLaunchDashboard }) {
             <SpecularButton
               size="sm"
               radius={12}
-              tint="#ffffff"
-              tintOpacity={0.06}
+              tint="#B39CD0"
+              tintOpacity={1}
               blur={10}
-              textColor="#e4e4e7"
-              lineColor="#c084fc"
-              baseColor="#581c87"
-              intensity={1.2}
+              textColor="#000000"
+              lineColor="#ffffff"
+              baseColor="#896ABD"
+              intensity={1.3}
               thickness={1.2}
               onClick={() => {
                 const section = document.getElementById('cardSwapSection');
                 if (section) section.scrollIntoView({ behavior: 'smooth' });
               }}
             >
-              About Us
+              <span className="font-bold text-black">About Us</span>
             </SpecularButton>
 
             <SpecularButton
