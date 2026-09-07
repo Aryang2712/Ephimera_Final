@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import LandingPage from './LandingPage';
 import StreamDashboard from './components/StreamDashboard';
-import { ArrowLeft, Radio } from 'lucide-react';
+import ThinkingDots from './ThinkingDots';
+import { ArrowLeft } from 'lucide-react';
 
 export default function App() {
   const [showDashboard, setShowDashboard] = useState(false);
@@ -17,14 +18,27 @@ export default function App() {
     );
   }
 
-  // 2. When 'Launch Live P2P Player' is clicked, show StreamDashboard with luxurious obsidian-purple aesthetic
+  // 2. When 'Launch Live P2P Player' is clicked, show StreamDashboard with Thinking Dots background
   return (
     <div className="min-h-screen bg-[#120F17] text-[#f3f4f6] relative overflow-x-hidden selection:bg-purple-600 selection:text-white">
-      {/* Ambient background light gradients matching Landing Page */}
+      {/* React Bits "Thinking Dots" Breathing Matrix Background */}
+      <ThinkingDots
+        dotSpacing={30}
+        baseDotSize={1.1}
+        maxDotSize={3.8}
+        baseOpacity={0.12}
+        maxOpacity={0.75}
+        speed={0.75}
+        cloudCount={3}
+        iridescent={true}
+        interactive={true}
+      />
+
+      {/* Ambient background light gradients */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/4 w-96 h-96 bg-purple-600/15 rounded-full blur-[140px]" />
+        <div className="absolute -top-40 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-[140px]" />
         <div className="absolute top-1/3 -right-32 w-[30rem] h-[30rem] bg-indigo-600/10 rounded-full blur-[160px]" />
-        <div className="absolute -bottom-20 left-1/3 w-[28rem] h-[28rem] bg-violet-600/12 rounded-full blur-[150px]" />
+        <div className="absolute -bottom-20 left-1/3 w-[28rem] h-[28rem] bg-violet-600/10 rounded-full blur-[150px]" />
       </div>
 
       {/* Top Header Bar */}
