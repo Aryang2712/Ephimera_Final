@@ -13,7 +13,6 @@ export default function VideoPlayer({
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
   const isSyncingRef = useRef(false);
-  const hasStreamedRef = useRef(false);
 
   // ── Sync play/pause/seek from Host to Peers ────────────────────────────────
   useEffect(() => {
@@ -74,8 +73,6 @@ export default function VideoPlayer({
   // ── Video Source & Live Streaming Setup ────────────────────────────────────
   useEffect(() => {
     const video = videoRef.current;
-    hasStreamedRef.current = false;
-
     if (!videoSource || !video) {
       if (hlsRef.current) {
         hlsRef.current.destroy();
@@ -181,18 +178,17 @@ export default function VideoPlayer({
     video.src = videoSource;
 
     const handleLoadedData = () => {
-      if (isHost && onStreamReady && !hasStreamedRef.current) {
+      if (isHost && onStreamReady) {
         try {
           const stream = video.captureStream?.(60) || video.mozCaptureStream?.(60) || video.captureStream?.() || video.mozCaptureStream?.();
           if (stream) {
-            hasStreamedRef.current = true;
             stream.getVideoTracks().forEach((track) => {
               if ('contentHint' in track) {
                 track.contentHint = 'detail';
               }
             });
             console.log('🎥 Captured 60FPS HD video stream from host, streaming to peers...');
-            onStreamReady(stream, { title });
+            onStreamReady(stream);
           }
         } catch (e) {
           console.warn('captureStream not available:', e);
@@ -213,7 +209,7 @@ export default function VideoPlayer({
       video.removeEventListener('canplay', handleLoadedData);
       video.removeEventListener('play', handleLoadedData);
     };
-  }, [videoSource, isHls, isHost, onStreamReady, title]);
+  }, [videoSource, isHls, isHost, onStreamReady]);
 
   if (!videoSource) {
     return (
@@ -237,7 +233,7 @@ export default function VideoPlayer({
     <div className="relative w-full h-full bg-black rounded-xl overflow-hidden shadow-lg border-2 border-gray-800">
       <video 
         ref={videoRef} 
-        controls={true} 
+        controls={isHost} 
         autoPlay 
         playsInline
         className="w-full h-full object-contain max-h-[520px]"

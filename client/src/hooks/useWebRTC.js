@@ -284,21 +284,11 @@ export function useWebRTC(roomId = 'ephimera-global-room') {
   }, []);
 
   const streamLiveVideo = useCallback(
-    async (mediaStream, meta = {}) => {
+    async (mediaStream) => {
       activeMediaStreamRef.current = mediaStream;
       if (!mediaStream) return;
 
-      const streamInfo = {
-        type: 'remote-stream-start',
-        title: meta.title || 'P2P Live Video Stream',
-        streamType: 'webrtc'
-      };
-      activeStreamMetaRef.current = streamInfo;
-
-      // Broadcast control message to all peers so receiver dashboards switch immediately
-      window.broadcastControlToPeers?.(streamInfo);
-
-      console.log('🎥 Broadcasting live MediaStream to all mesh peers (Ultra-HD 60FPS)');
+      console.log('🎥 Broadcasting live MediaStream to peers (Ultra-HD)');
       for (const [peerId, peer] of Object.entries(peersRef.current)) {
         const pc = peer.pc;
         if (!pc || pc.signalingState === 'closed') continue;
@@ -324,23 +314,6 @@ export function useWebRTC(roomId = 'ephimera-global-room') {
 
         // Renegotiate with peer
         try {
-          if (pc.signalingState !== 'stable') {
-            await new Promise((resolve) => {
-              const checkState = () => {
-                if (pc.signalingState === 'stable' || pc.signalingState === 'closed') {
-                  pc.removeEventListener('signalingstatechange', checkState);
-                  resolve();
-                }
-              };
-              pc.addEventListener('signalingstatechange', checkState);
-              setTimeout(() => {
-                pc.removeEventListener('signalingstatechange', checkState);
-                resolve();
-              }, 800);
-            });
-          }
-          if (pc.signalingState === 'closed') continue;
-
           peer.makingOffer = true;
           const offer = await pc.createOffer();
           await pc.setLocalDescription(offer);
@@ -356,16 +329,11 @@ export function useWebRTC(roomId = 'ephimera-global-room') {
     [setHighQualityCodecs, tuneHighQualityVideoSenders]
   );
 
-  const stopLiveVideoStream = useCallback(async () => {
+  const stopLiveVideoStream = useCallback(() => {
     activeMediaStreamRef.current = null;
-    activeStreamMetaRef.current = null;
     setIncomingMediaStream(null);
-
-    window.broadcastControlToPeers?.({ type: 'remote-stream-stop' });
-
-    for (const [peerId, peer] of Object.entries(peersRef.current)) {
-      const pc = peer.pc;
-      if (!pc || pc.signalingState === 'closed') continue;
+    Object.values(peersRef.current).forEach(({ pc }) => {
+      if (!pc) return;
       pc.getSenders().forEach((sender) => {
         if (sender.track) {
           try {
@@ -373,17 +341,7 @@ export function useWebRTC(roomId = 'ephimera-global-room') {
           } catch (e) {}
         }
       });
-      try {
-        peer.makingOffer = true;
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        sendSignalRef.current?.(peerId, 'offer', pc.localDescription);
-      } catch (err) {
-        console.warn(`Renegotiation after stop failed with peer ${peerId.substring(0, 8)}:`, err);
-      } finally {
-        peer.makingOffer = false;
-      }
-    }
+    });
   }, []);
 
   // ─── data channel listeners ────────────────────────────────────────────────
@@ -593,9 +551,7 @@ export function useWebRTC(roomId = 'ephimera-global-room') {
       pc.ontrack = (event) => {
         console.log(`🎥 [${peerId.substring(0, 8)}] Received remote MediaStream track:`, event.track.kind);
         if (event.streams && event.streams[0]) {
-          setIncomingMediaStream(new MediaStream(event.streams[0].getTracks()));
-        } else if (event.track) {
-          setIncomingMediaStream(new MediaStream([event.track]));
+          setIncomingMediaStream(event.streams[0]);
         }
       };
 
@@ -606,7 +562,6 @@ export function useWebRTC(roomId = 'ephimera-global-room') {
             pc.addTrack(track, activeMediaStreamRef.current);
           } catch (e) {}
         });
-        setHighQualityCodecs(pc);
       }
 
       pc.onconnectionstatechange = () => {
@@ -719,16 +674,10 @@ export function useWebRTC(roomId = 'ephimera-global-room') {
           }
 
           if (offerCollision) {
-            peer.isSettingRemoteDesc = true;
-            if (pc.signalingState === 'have-local-offer') {
-              try {
-                await pc.setLocalDescription({ type: 'rollback' });
-              } catch (e) {
-                console.warn('Rollback warning:', e);
-              }
-            }
-            await pc.setRemoteDescription(new RTCSessionDescription(payload));
-            peer.isSettingRemoteDesc = false;
+            await Promise.all([
+              pc.setLocalDescription({ type: 'rollback' }),
+              pc.setRemoteDescription(new RTCSessionDescription(payload))
+            ]);
           } else {
             peer.isSettingRemoteDesc = true;
             await pc.setRemoteDescription(new RTCSessionDescription(payload));
