@@ -1,3 +1,4 @@
+const http = require('http');
 const WebSocket = require('ws');
 const os = require('os');
 
@@ -15,8 +16,14 @@ function getLocalIps() {
 }
 
 const PORT = process.env.PORT || 8080;
-// Bind to 0.0.0.0 so all cloud and LAN devices can connect
-const wss = new WebSocket.Server({ port: PORT, host: '0.0.0.0' });
+
+// HTTP server for Render health checks + WebSocket Upgrade
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('EPHIMERA Signaling Server is Online 🚀\n');
+});
+
+const wss = new WebSocket.Server({ server });
 
 wss.on('connection', (ws, req) => {
   const remoteIp = req.socket.remoteAddress;
@@ -77,11 +84,14 @@ wss.on('connection', (ws, req) => {
   });
 });
 
-console.log('🚀 Epimera Signaling Server running on port 8080 (0.0.0.0)');
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Epimera Signaling Server running on port ${PORT} (0.0.0.0)`);
+});
+
 const localIps = getLocalIps();
 if (localIps.length > 0) {
   console.log('📡 Local Wi-Fi IP(s) for other Laptops to connect:');
   localIps.forEach((item) => {
-    console.log(`   ➜ ${item.name}: http://${item.ip}:5173  (Signaling: ws://${item.ip}:8080)`);
+    console.log(`   ➜ ${item.name}: http://${item.ip}:5173  (Signaling: ws://${item.ip}:${PORT})`);
   });
 }
