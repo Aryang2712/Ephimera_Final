@@ -254,18 +254,18 @@ export default function StreamDashboard({ videoId }) {
       {/* Network Stats Cards - Strict Semantic State Colors & Neutral Dark Chassis */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         
-        {/* Card 1: Origin Server Load - State: Standby (Slate #64748b) */}
+        {/* Card 1: Origin Server Load */}
         <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] p-5 border border-white/[0.08] flex flex-col items-center group hover:border-white/[0.15] transition-colors duration-200">
-          <div className="absolute inset-x-4 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.15] to-transparent" />
-          <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-slate-400 mb-3">
+          <div className="absolute inset-x-4 top-0 h-[1px] bg-gradient-to-r from-transparent via-sky-400/25 to-transparent" />
+          <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-3">
             <Server size={18} />
           </div>
           <p className="text-slate-400 text-xs font-medium text-center">Origin Server Load</p>
           <p className="text-2xl font-black text-white mt-1 tracking-tight">{isConnected ? '-50%' : 'Normal'}</p>
-          <p className="text-[11px] text-slate-500 mt-1 font-mono">Standby</p>
+          <p className="text-[11px] text-sky-400/70 mt-1 font-mono">Standby</p>
         </div>
         
-        {/* Card 2: Live P2P Bitrate - State: Transferring/P2P (Electric Cyan #38bdf8) */}
+        {/* Card 2: Live P2P Bitrate */}
         <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] p-5 border border-white/[0.08] flex flex-col items-center group hover:border-white/[0.15] transition-colors duration-200">
           <div className="absolute inset-x-4 top-0 h-[1px] bg-gradient-to-r from-transparent via-sky-400/25 to-transparent" />
           <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-3">
@@ -278,7 +278,7 @@ export default function StreamDashboard({ videoId }) {
           <p className="text-[11px] text-sky-400/70 mt-1 font-mono">Real-Time RTP</p>
         </div>
 
-        {/* Card 3: Live Render FPS - State: Transferring/P2P (Electric Cyan #38bdf8) */}
+        {/* Card 3: Live Render FPS */}
         <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] p-5 border border-white/[0.08] flex flex-col items-center group hover:border-white/[0.15] transition-colors duration-200">
           <div className="absolute inset-x-4 top-0 h-[1px] bg-gradient-to-r from-transparent via-sky-400/25 to-transparent" />
           <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-3">
@@ -288,20 +288,20 @@ export default function StreamDashboard({ videoId }) {
           <p className="text-2xl font-black text-white mt-1 tracking-tight">
             {renderFps} <span className="text-xs font-semibold text-sky-400">FPS</span>
           </p>
-          <p className="text-[11px] text-slate-500 mt-1 font-mono">Sub-100ms Latency</p>
+          <p className="text-[11px] text-sky-400/70 mt-1 font-mono">Sub-100ms Latency</p>
         </div>
 
-        {/* Card 4: Bandwidth Saved - State: Active/Success (Emerald #10b981) */}
+        {/* Card 4: Bandwidth Saved */}
         <div className="relative overflow-hidden rounded-2xl bg-[#0d1322] p-5 border border-white/[0.08] flex flex-col items-center group hover:border-white/[0.15] transition-colors duration-200">
-          <div className="absolute inset-x-4 top-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-400/25 to-transparent" />
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-3">
+          <div className="absolute inset-x-4 top-0 h-[1px] bg-gradient-to-r from-transparent via-sky-400/25 to-transparent" />
+          <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-3">
             <HardDrive size={18} />
           </div>
           <p className="text-slate-400 text-xs font-medium text-center">Bandwidth Saved</p>
           <p className="text-2xl font-black text-white mt-1 tracking-tight">
-            {megabytesSaved} <span className="text-xs font-semibold text-emerald-400">MB</span>
+            {megabytesSaved} <span className="text-xs font-semibold text-sky-400">MB</span>
           </p>
-          <p className="text-[11px] text-emerald-400/70 mt-1 font-mono">Direct P2P Offload</p>
+          <p className="text-[11px] text-sky-400/70 mt-1 font-mono">Direct P2P Offload</p>
         </div>
 
       </div>
