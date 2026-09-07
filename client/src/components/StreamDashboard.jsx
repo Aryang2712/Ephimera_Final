@@ -90,11 +90,12 @@ export default function StreamDashboard({ videoId }) {
         setRemoteLiveStream({
           url: msg.url,
           title: msg.title || 'P2P Mesh Live Stream',
-          streamType: msg.streamType || 'hls'
+          streamType: msg.streamType || 'webrtc'
         });
         setShowDropZone(false);
       } else if (msg.type === 'remote-stream-stop') {
         setRemoteLiveStream(null);
+        resetIncomingStream();
         setShowDropZone(true);
       }
     };
@@ -112,7 +113,9 @@ export default function StreamDashboard({ videoId }) {
     setShowDropZone(false);
 
     try {
-      await seedVideoFile(file, manifest, chunkStore);
+      if (manifest && chunkStore) {
+        await seedVideoFile(manifest, chunkStore);
+      }
     } catch (err) {
       console.error("[StreamDashboard] Error seeding video file:", err);
     }
@@ -135,20 +138,32 @@ export default function StreamDashboard({ videoId }) {
     setShowDropZone(true);
   };
 
-  // Determine active source & role
+  // Determine active source & role (Host actions take precedence, followed by incoming P2P streams)
   let activeSource = null;
   let activeTitle = '';
   let isHls = false;
   let isP2P = false;
   let roleLabel = 'Standby';
 
-  if (incomingMediaStream) {
+  if (localVideo) {
+    activeSource = localVideo.objectUrl;
+    activeTitle = localVideo.title || localVideo.file?.name || 'Local Video';
+    isHls = false;
+    isP2P = true;
+    roleLabel = 'P2P Swarm Host';
+  } else if (isDemoStream) {
+    activeSource = DEMO_HLS_URL;
+    activeTitle = 'MUX Demo HLS Stream';
+    isHls = true;
+    isP2P = false;
+    roleLabel = 'HLS Live Host';
+  } else if (incomingMediaStream) {
     activeSource = incomingMediaStream;
-    activeTitle = 'Live Video Stream (P2P Host)';
+    activeTitle = remoteLiveStream?.title || 'Live Video Stream (P2P Host)';
     isHls = false;
     isP2P = true;
     roleLabel = 'P2P Receiver (Live)';
-  } else if (remoteLiveStream) {
+  } else if (remoteLiveStream && remoteLiveStream.url) {
     activeSource = remoteLiveStream.url;
     activeTitle = remoteLiveStream.title;
     isHls = remoteLiveStream.streamType === 'hls';
@@ -160,18 +175,6 @@ export default function StreamDashboard({ videoId }) {
     isHls = false;
     isP2P = true;
     roleLabel = 'P2P Seeder/Receiver';
-  } else if (localVideo) {
-    activeSource = localVideo.objectUrl;
-    activeTitle = localVideo.title || localVideo.file.name;
-    isHls = false;
-    isP2P = true;
-    roleLabel = 'P2P Swarm Host';
-  } else if (isDemoStream) {
-    activeSource = DEMO_HLS_URL;
-    activeTitle = 'MUX Demo HLS Stream';
-    isHls = true;
-    isP2P = false;
-    roleLabel = 'HLS Live Host';
   }
 
   const megabytesSaved = (totalBytesReceived / (1024 * 1024)).toFixed(2);
