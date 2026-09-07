@@ -92,8 +92,13 @@ export default function VideoPlayer({
         hlsRef.current.destroy();
         hlsRef.current = null;
       }
+      video.removeAttribute('src');
       video.srcObject = videoSource;
-      video.play().catch((err) => console.log('Live stream play:', err.message));
+      video.muted = true; // Required by browsers for immediate unprompted autoplay
+      video.playsInline = true;
+      video.play().catch((err) => {
+        console.log('Live stream play attempt:', err.message);
+      });
       return;
     }
 
@@ -191,11 +196,18 @@ export default function VideoPlayer({
       }
     };
 
+    if (video.readyState >= 2) {
+      handleLoadedData();
+    }
     video.addEventListener('loadeddata', handleLoadedData);
+    video.addEventListener('canplay', handleLoadedData);
+    video.addEventListener('play', handleLoadedData);
     video.play().catch((err) => console.log('Autoplay:', err.message));
 
     return () => {
       video.removeEventListener('loadeddata', handleLoadedData);
+      video.removeEventListener('canplay', handleLoadedData);
+      video.removeEventListener('play', handleLoadedData);
     };
   }, [videoSource, isHls, isHost, onStreamReady]);
 
