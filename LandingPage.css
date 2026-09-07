@@ -1,0 +1,413 @@
+/* Ephimera LandingPage Component CSS */
+@import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+.landing-root {
+  --bg-color: #120F17;
+  --shard-color: #896ABD;
+  --accent-color: #A855F7;
+  --text-main: #f3f4f6;
+  --text-muted: #a1a1aa;
+  --text-dim: #71717a;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(168, 85, 247, 0.35);
+
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+/* AeroShards WebGL Background */
+.landing-root .aero-shards {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: auto;
+  z-index: 0;
+  background-color: var(--bg-color);
+}
+
+.landing-root .aero-shards__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  pointer-events: none;
+}
+
+.landing-root .vignette-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(circle at 50% 40%, rgba(18, 15, 23, 0.3) 0%, rgba(18, 15, 23, 0.88) 85%);
+}
+
+.landing-root .page-wrapper {
+  position: relative;
+  z-index: 2;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem 4rem 2rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.landing-root .hero-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 4rem 1rem 4rem 1rem;
+  margin: auto 0;
+  width: 100%;
+}
+
+.landing-root .particle-text-container {
+  width: 100%;
+  max-width: 900px;
+  height: 200px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.landing-root .particle-text {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  overflow: hidden;
+  touch-action: none;
+  isolation: isolate;
+}
+
+.landing-root .particle-text__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.landing-root .particle-text__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.landing-root .hero-tagline {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #e4e4e7;
+  margin-top: 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.landing-root .hero-tagline span {
+  background: linear-gradient(120deg, #c084fc 0%, #60a5fa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+
+.landing-root .hero-description {
+  max-width: 680px;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 1.25rem auto 2.5rem auto;
+}
+
+/* Centered CTA Button */
+.landing-root .hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 3.5rem;
+}
+
+.landing-root .cta-card-btn {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 2.2rem;
+  border-radius: 20px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.03) 100%);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.35),
+              inset 0 -1px 1px 0 rgba(0, 0, 0, 0.35),
+              0 10px 25px rgba(0, 0, 0, 0.4),
+              0 0 20px rgba(255, 255, 255, 0.05);
+}
+
+.landing-root .cta-card-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 8%;
+  right: 8%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+}
+
+.landing-root .cta-card-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.06) 100%);
+  border-color: rgba(255, 255, 255, 0.45);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: inset 0 1px 2px 0 rgba(255, 255, 255, 0.6),
+              0 14px 32px rgba(0, 0, 0, 0.45),
+              0 0 35px rgba(255, 255, 255, 0.22),
+              0 0 15px rgba(220, 225, 235, 0.35);
+}
+
+.landing-root .btn-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.landing-root .btn-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.landing-root .btn-sub {
+  font-size: 0.74rem;
+  color: rgba(243, 244, 246, 0.7);
+  font-weight: 500;
+}
+
+/* CardSwap Split Layout */
+.landing-root .card-swap-section {
+  position: relative;
+  width: 100%;
+  max-width: 1360px;
+  min-height: 520px;
+  margin: 4rem auto 4.5rem auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3.5rem;
+  perspective: 1200px;
+}
+
+.landing-root .features-left-block {
+  flex: 0 1 380px;
+  text-align: left;
+  z-index: 2;
+}
+
+.landing-root .features-kicker {
+  display: inline-block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #b39cd0;
+  margin-bottom: 0.5rem;
+}
+
+.landing-root .features-title {
+  font-family: "Black Ops One", system-ui, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: clamp(2.8rem, 5.5vw, 4.5rem);
+  letter-spacing: 0.05em;
+  line-height: 1;
+  color: #ffffff;
+  margin: 0.2rem 0 1.2rem 0;
+  text-shadow: 0 0 25px rgba(179, 156, 208, 0.4);
+}
+
+.landing-root .features-subtitle {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: rgba(243, 244, 246, 0.75);
+  font-weight: 500;
+  max-width: 360px;
+}
+
+.landing-root .card-swap-wrapper {
+  flex: 1 1 640px;
+  position: relative;
+  height: 440px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.landing-root .card-swap-container {
+  position: relative;
+  width: 580px;
+  height: 380px;
+  perspective: 1200px;
+  overflow: visible;
+  transform: translateX(12%);
+}
+
+.landing-root .swap-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 580px;
+  height: 380px;
+  border-radius: 26px;
+  padding: 2.6rem 2.8rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transform-style: preserve-3d;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.6);
+  transition: box-shadow 0.3s ease;
+  text-align: left;
+}
+
+.landing-root .swap-card:hover {
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.7), inset 0 1px 3px rgba(255, 255, 255, 0.85);
+}
+
+.landing-root .swap-card.theme-1 {
+  background: linear-gradient(135deg, #B39CD0 0%, #9e83c2 100%);
+  color: #170c2a;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.landing-root .swap-card.theme-2 {
+  background: linear-gradient(135deg, #b38FB9 0%, #9f75a7 100%);
+  color: #1e0924;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.landing-root .swap-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 5%;
+  right: 5%;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+}
+
+.landing-root .swap-card .banner-title {
+  font-family: "Black Ops One", system-ui, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: clamp(1.45rem, 2.4vw, 2.05rem);
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  color: inherit;
+  margin-bottom: 0.45rem;
+}
+
+.landing-root .card-description {
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  line-height: 1.45;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: inherit;
+  opacity: 0.95;
+  margin: 0.5rem 0;
+}
+
+.landing-root .banner-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+}
+
+.landing-root .banner-chip {
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: inherit;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.landing-root .banner-chip:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.landing-root footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 2rem;
+  margin-top: 3rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+@media (max-width: 992px) {
+  .landing-root .card-swap-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2rem;
+    min-height: auto;
+  }
+  .landing-root .card-swap-wrapper {
+    width: 100%;
+    justify-content: center;
+    height: 400px;
+  }
+  .landing-root .card-swap-container {
+    transform: translateX(4%);
+  }
+}
+
+@media (max-width: 640px) {
+  .landing-root .card-swap-container {
+    width: 90vw;
+    max-width: 480px;
+    height: 350px;
+    transform: scale(0.85) translateX(4%);
+  }
+  .landing-root .swap-card {
+    width: 100%;
+    max-width: 480px;
+    height: 350px;
+    padding: 1.8rem 1.4rem;
+  }
+}
