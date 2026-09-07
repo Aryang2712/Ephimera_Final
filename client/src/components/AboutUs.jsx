@@ -115,11 +115,6 @@ export default function AboutUs({ onBackToLanding, onLaunchDashboard }) {
                 Our team is based in-person, where we build and benchmark together. We're a team of distributed systems researchers, media pipeline architects, and stubborn protocol hackers. If you're stubbornly optimistic and don't back away from hard technical problems, join us.
               </p>
             </div>
-
-            <button className="about-join-btn" onClick={onLaunchDashboard}>
-              <span>JOIN THE TEAM</span>
-              <ArrowUpRight size={15} />
-            </button>
           </section>
 
           {/* Meet the Team Section */}
