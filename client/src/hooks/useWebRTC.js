@@ -42,6 +42,17 @@ export function useWebRTC(roomId) {
   const activeStreamMetaRef = useRef(null);
   const activeMediaStreamRef = useRef(null);
 
+  // ─── P2P signaling relay refs (mesh survives signaling-server outages) ────
+  // Signaling normally goes through the WebSocket server. When it's down,
+  // offers/answers/ICE candidates are gossiped through already-open data
+  // channels instead. Refs let later-defined callbacks be called from
+  // earlier-defined ones (setupDataChannelListeners) without reordering
+  // the whole file.
+  const seenRelayIdsRef = useRef(new Set());
+  const sendSignalRef = useRef(null);
+  const discoverPeerRef = useRef(null);
+  const handleIncomingSignalRef = useRef(null);
+
   // ─── helpers ───────────────────────────────────────────────────────────────
 
   const updateConnectedCount = useCallback(() => {
@@ -57,6 +68,35 @@ export function useWebRTC(roomId) {
       .map((p) => p.dc)
       .filter((dc) => dc && dc.readyState === 'open');
   }, []);
+
+  // Flood a relay-signal message to every open channel except the one it
+  // arrived on (or none, if we're originating it). Small TTL + a seen-id
+  // set keep this bounded even in a fully-meshed swarm.
+  const floodRelay = useCallback((relayMsg, exceptPeerId) => {
+    const data = JSON.stringify(relayMsg);
+    Object.entries(peersRef.current).forEach(([pid, peer]) => {
+      if (pid === exceptPeerId) return;
+      if (peer.dc && peer.dc.readyState === 'open') {
+        try {
+          peer.dc.send(data);
+        } catch {}
+      }
+    });
+  }, []);
+
+  // Tell every connected peer who else we know about. This is how a brand
+  // new connection learns about the rest of the mesh, and how the mesh
+  // heals itself if the signaling server disappears mid-session.
+  const gossipPeerList = useCallback(() => {
+    const knownPeers = Object.keys(peersRef.current);
+    if (knownPeers.length === 0) return;
+    const msg = JSON.stringify({ type: 'peer-list', peers: [myClientId, ...knownPeers] });
+    getOpenChannels().forEach((dc) => {
+      try {
+        dc.send(msg);
+      } catch {}
+    });
+  }, [myClientId, getOpenChannels]);
 
   const waitForDrain = useCallback(
     (channel, lowWater = 64 * 1024) =>
@@ -255,15 +295,7 @@ export function useWebRTC(roomId) {
           peer.makingOffer = true;
           const offer = await pc.createOffer();
           await pc.setLocalDescription(offer);
-          ws.current?.send(
-            JSON.stringify({
-              type: 'offer',
-              room: roomId,
-              payload: pc.localDescription,
-              clientId: myClientId,
-              targetClientId: peerId
-            })
-          );
+          sendSignalRef.current?.(peerId, 'offer', pc.localDescription);
           await tuneHighQualityVideoSenders(pc);
         } catch (err) {
           console.error(`Renegotiation failed with peer ${peerId.substring(0, 8)}:`, err);
@@ -272,7 +304,7 @@ export function useWebRTC(roomId) {
         }
       }
     },
-    [roomId, myClientId, setHighQualityCodecs, tuneHighQualityVideoSenders]
+    [setHighQualityCodecs, tuneHighQualityVideoSenders]
   );
 
   const stopLiveVideoStream = useCallback(() => {
@@ -320,6 +352,10 @@ export function useWebRTC(roomId) {
             );
           } catch (e) {}
         }
+
+        // Gossip: share our known-peer list so the mesh can complete itself
+        // (and stay connectable) even if the signaling server goes away.
+        gossipPeerList();
       };
 
       channel.onclose = () => {
@@ -337,6 +373,34 @@ export function useWebRTC(roomId) {
           try {
             msg = JSON.parse(e.data);
           } catch {
+            return;
+          }
+
+          if (msg.type === 'peer-list') {
+            // Gossip: connect to anyone this peer knows about that we don't.
+            (msg.peers || []).forEach((id) => {
+              if (!id || id === myClientId) return;
+              const existing = peersRef.current[id];
+              const isLive = existing && existing.pc && !['closed', 'failed'].includes(existing.pc.connectionState);
+              if (!isLive) discoverPeerRef.current?.(id);
+            });
+            return;
+          }
+
+          if (msg.type === 'relay-signal') {
+            // Peer-relayed offer/answer/ICE — used when the signaling server
+            // is unreachable so new connections and renegotiation can still
+            // happen through peers we're already connected to.
+            if (seenRelayIdsRef.current.has(msg.id)) return;
+            seenRelayIdsRef.current.add(msg.id);
+            if (seenRelayIdsRef.current.size > 500) {
+              seenRelayIdsRef.current = new Set(Array.from(seenRelayIdsRef.current).slice(-250));
+            }
+            if (msg.to === myClientId) {
+              handleIncomingSignalRef.current?.(msg.kind, msg.from, msg.payload);
+            } else if ((msg.ttl ?? 0) > 0) {
+              floodRelay({ ...msg, ttl: msg.ttl - 1 }, peerId);
+            }
             return;
           }
 
@@ -436,7 +500,7 @@ export function useWebRTC(roomId) {
         }
       };
     },
-    [updateConnectedCount, transmitFileToChannel]
+    [updateConnectedCount, transmitFileToChannel, gossipPeerList, floodRelay, myClientId]
   );
 
   // ─── peer connection factory ───────────────────────────────────────────────
@@ -492,16 +556,10 @@ export function useWebRTC(roomId) {
       };
 
       pc.onicecandidate = (event) => {
-        if (event.candidate && ws.current?.readyState === WebSocket.OPEN) {
-          ws.current.send(
-            JSON.stringify({
-              type: 'ice-candidate',
-              room: roomId,
-              payload: event.candidate,
-              clientId: myClientId,
-              targetClientId: peerId
-            })
-          );
+        if (event.candidate) {
+          // sendSignal tries the WS server first, then falls back to
+          // relaying through the mesh if it's unreachable.
+          sendSignalRef.current?.(peerId, 'ice-candidate', event.candidate);
         }
       };
 
@@ -515,7 +573,7 @@ export function useWebRTC(roomId) {
 
       return peerState;
     },
-    [roomId, myClientId, setupDataChannelListeners, updateConnectedCount]
+    [setupDataChannelListeners, updateConnectedCount]
   );
 
   const processCandidateQueue = useCallback(async (peerId) => {
@@ -531,6 +589,143 @@ export function useWebRTC(roomId) {
       }
     }
   }, []);
+
+  // ─── signal sending / receiving (WS-first, mesh-relay fallback) ───────────
+  // sendSignal is the single place any offer/answer/ICE candidate goes out.
+  // It tries the WebSocket signaling server first; if that's unreachable it
+  // gossips the message through the mesh instead (see floodRelay above).
+  const sendSignal = useCallback(
+    (targetPeerId, kind, payload) => {
+      if (ws.current?.readyState === WebSocket.OPEN) {
+        try {
+          ws.current.send(
+            JSON.stringify({
+              type: kind,
+              room: roomId,
+              payload,
+              clientId: myClientId,
+              targetClientId: targetPeerId
+            })
+          );
+          return;
+        } catch (err) {
+          console.warn('Signaling server send failed, falling back to P2P relay:', err);
+        }
+      }
+
+      const relayMsg = {
+        type: 'relay-signal',
+        id: `${myClientId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        from: myClientId,
+        to: targetPeerId,
+        kind,
+        payload,
+        ttl: 4
+      };
+      seenRelayIdsRef.current.add(relayMsg.id);
+      console.log(`📡 Signaling server unavailable — relaying [${kind}] to ${targetPeerId.substring(0, 8)} via mesh`);
+      floodRelay(relayMsg, null);
+    },
+    [roomId, myClientId, floodRelay]
+  );
+  sendSignalRef.current = sendSignal;
+
+  // The actual offer/answer/ICE handling logic — identical whether the
+  // message arrived via the WS server or was relayed through a peer.
+  const handleIncomingSignal = useCallback(
+    async (kind, peerId, payload) => {
+      try {
+        if (kind === 'offer') {
+          if (!peersRef.current[peerId]) {
+            createPeerConnectionForPeer(peerId);
+          }
+          const peer = peersRef.current[peerId];
+          const pc = peer.pc;
+
+          const polite = myClientId > peerId;
+          const offerCollision = peer.makingOffer || pc.signalingState !== 'stable';
+          peer.ignoreOffer = !polite && offerCollision;
+
+          if (peer.ignoreOffer) {
+            console.log(`⚠️ [${peerId.substring(0, 8)}] Ignoring offer (polite collision)`);
+            return;
+          }
+
+          if (offerCollision) {
+            await Promise.all([
+              pc.setLocalDescription({ type: 'rollback' }),
+              pc.setRemoteDescription(new RTCSessionDescription(payload))
+            ]);
+          } else {
+            peer.isSettingRemoteDesc = true;
+            await pc.setRemoteDescription(new RTCSessionDescription(payload));
+            peer.isSettingRemoteDesc = false;
+          }
+
+          await processCandidateQueue(peerId);
+
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          sendSignal(peerId, 'answer', pc.localDescription);
+          await processCandidateQueue(peerId);
+        } else if (kind === 'answer') {
+          const peer = peersRef.current[peerId];
+          if (peer && peer.pc.signalingState !== 'closed') {
+            peer.isSettingRemoteDesc = true;
+            await peer.pc.setRemoteDescription(new RTCSessionDescription(payload));
+            peer.isSettingRemoteDesc = false;
+            await processCandidateQueue(peerId);
+          }
+        } else if (kind === 'ice-candidate') {
+          if (!payload) return;
+          const peer = peersRef.current[peerId];
+          if (!peer) return;
+
+          const candidate = new RTCIceCandidate(payload);
+
+          if (peer.pc && peer.pc.remoteDescription?.type && !peer.isSettingRemoteDesc) {
+            try {
+              await peer.pc.addIceCandidate(candidate);
+            } catch (err) {
+              console.warn(`Queuing ICE candidate for ${peerId.substring(0, 8)}:`, err);
+              peer.candidateQueue.push(candidate);
+            }
+          } else {
+            peer.candidateQueue.push(candidate);
+          }
+        }
+      } catch (err) {
+        console.error(`Handshake error with peer ${peerId?.substring(0, 8)}:`, err);
+      }
+    },
+    [myClientId, createPeerConnectionForPeer, processCandidateQueue, sendSignal]
+  );
+  handleIncomingSignalRef.current = handleIncomingSignal;
+
+  // Initiate a connection to a peer we've just learned about — either
+  // because the signaling server told us they joined, or because another
+  // peer gossiped their id to us over an existing data channel.
+  const discoverPeer = useCallback(
+    async (peerId) => {
+      if (peerId === myClientId) return;
+      const existing = peersRef.current[peerId];
+      if (existing?.pc && !['closed', 'failed'].includes(existing.pc.connectionState)) {
+        return; // already connected or connecting
+      }
+      console.log(`👋 Discovering peer ${peerId.substring(0, 8)} — sending offer...`);
+      const peer = createPeerConnectionForPeer(peerId);
+      peer.makingOffer = true;
+      try {
+        const offer = await peer.pc.createOffer();
+        await peer.pc.setLocalDescription(offer);
+        sendSignal(peerId, 'offer', peer.pc.localDescription);
+      } finally {
+        peer.makingOffer = false;
+      }
+    },
+    [myClientId, createPeerConnectionForPeer, sendSignal]
+  );
+  discoverPeerRef.current = discoverPeer;
 
   // ─── signaling effect ──────────────────────────────────────────────────────
 
@@ -574,95 +769,14 @@ export function useWebRTC(roomId) {
 
       console.log(`📥 Signaling [${data.type}] from ${peerId.substring(0, 8)}`);
 
-      try {
-        if (data.type === 'join') {
-          console.log(`👋 Peer ${peerId.substring(0, 8)} joined — sending offer...`);
-          const peer = createPeerConnectionForPeer(peerId);
-          peer.makingOffer = true;
-          const offer = await peer.pc.createOffer();
-          await peer.pc.setLocalDescription(offer);
-          socket.send(
-            JSON.stringify({
-              type: 'offer',
-              room: roomId,
-              payload: peer.pc.localDescription,
-              clientId: myClientId,
-              targetClientId: peerId
-            })
-          );
-          peer.makingOffer = false;
-
-        } else if (data.type === 'offer') {
-          if (!peersRef.current[peerId]) {
-            createPeerConnectionForPeer(peerId);
-          }
-          const peer = peersRef.current[peerId];
-          const pc = peer.pc;
-
-          const polite = myClientId > peerId;
-          const offerCollision = peer.makingOffer || pc.signalingState !== 'stable';
-          peer.ignoreOffer = !polite && offerCollision;
-
-          if (peer.ignoreOffer) {
-            console.log(`⚠️ [${peerId.substring(0, 8)}] Ignoring offer (polite collision)`);
-            return;
-          }
-
-          if (offerCollision) {
-            await Promise.all([
-              pc.setLocalDescription({ type: 'rollback' }),
-              pc.setRemoteDescription(new RTCSessionDescription(data.payload))
-            ]);
-          } else {
-            peer.isSettingRemoteDesc = true;
-            await pc.setRemoteDescription(new RTCSessionDescription(data.payload));
-            peer.isSettingRemoteDesc = false;
-          }
-
-          await processCandidateQueue(peerId);
-
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          socket.send(
-            JSON.stringify({
-              type: 'answer',
-              room: roomId,
-              payload: pc.localDescription,
-              clientId: myClientId,
-              targetClientId: peerId
-            })
-          );
-          await processCandidateQueue(peerId);
-
-        } else if (data.type === 'answer') {
-          const peer = peersRef.current[peerId];
-          if (peer && peer.pc.signalingState !== 'closed') {
-            peer.isSettingRemoteDesc = true;
-            await peer.pc.setRemoteDescription(new RTCSessionDescription(data.payload));
-            peer.isSettingRemoteDesc = false;
-            await processCandidateQueue(peerId);
-          }
-
-        } else if (data.type === 'ice-candidate') {
-          if (!data.payload) return;
-          const peer = peersRef.current[peerId];
-          if (!peer) return;
-
-          const candidate = new RTCIceCandidate(data.payload);
-
-          if (peer.pc && peer.pc.remoteDescription?.type && !peer.isSettingRemoteDesc) {
-            try {
-              await peer.pc.addIceCandidate(candidate);
-            } catch (err) {
-              console.warn(`Queuing ICE candidate for ${peerId.substring(0, 8)}:`, err);
-              peer.candidateQueue.push(candidate);
-            }
-          } else {
-            peer.candidateQueue.push(candidate);
-          }
-        }
-      } catch (err) {
-        console.error(`Handshake error with peer ${peerId?.substring(0, 8)}:`, err);
+      // All the actual handshake logic lives in discoverPeer/handleIncomingSignal
+      // now, so it's identical whether a message arrives via this WS server or
+      // gets relayed through the mesh (see the 'relay-signal' branch in
+      // setupDataChannelListeners above).
+      if (data.type === 'join') {
+        await discoverPeer(peerId);
+      } else if (data.type === 'offer' || data.type === 'answer' || data.type === 'ice-candidate') {
+        await handleIncomingSignal(data.type, peerId, data.payload);
       }
     };
 
@@ -675,7 +789,7 @@ export function useWebRTC(roomId) {
       });
       peersRef.current = {};
     };
-  }, [roomId, myClientId, createPeerConnectionForPeer, processCandidateQueue]);
+  }, [roomId, myClientId, discoverPeer, handleIncomingSignal]);
 
   // ─── HLS broadcast ─────────────────────────────────────────────────────────
 
